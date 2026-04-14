@@ -1,8 +1,39 @@
 import React from 'react';
 import { MultiLineTypeWriter } from '../components/MultiLineTypeWriter';
 import TopAppBar from '../components/TopAppBar';
+import './Homepage.css';
 
+/**
+ * Homepage — The main (and currently only) page of the ADC website.
+ *
+ * HOW THIS COMPONENT IS STRUCTURED (React concepts explained):
+ * ─────────────────────────────────────────────────────────────
+ * This is a **functional component** — a plain JavaScript function that
+ * returns JSX (the HTML-like syntax React uses). React calls this function
+ * every time it needs to render the page.
+ *
+ * LAYOUT (XP window metaphor):
+ * The entire page is wrapped in `div.window` from xp.css, so it looks like
+ * a single Windows XP application window. Inside:
+ *   - `<TopAppBar />` renders the blue XP title bar + nav menu.
+ *   - `<div className="window-body">` holds all page sections.
+ *   - `<div className="status-bar">` acts as the footer.
+ *
+ * NESTED WINDOW:
+ * The hero section contains a *second* xp.css window (`terminal-window`)
+ * embedded inside the main window body. This creates the classic XP
+ * "window-inside-a-window" look — like opening Command Prompt inside
+ * Explorer. xp.css styles both independently.
+ *
+ * WHY `React.FC`:
+ * `React.FC` (FunctionComponent) is a TypeScript type that tells the
+ * compiler "this is a valid React component". It automatically types the
+ * return value as `React.ReactElement` and provides `children` if needed.
+ */
 export const Homepage: React.FC = () => {
+  // The ASCII art lines fed to the typewriter effect.
+  // Each string is one line of output — the component renders them
+  // sequentially to simulate a terminal typing animation.
   const heroArt = [
     " █████╗ ██████╗  ██████╗",
     "██╔══██╗██╔══██╗██╔════╝",
@@ -15,490 +46,230 @@ export const Homepage: React.FC = () => {
   ];
 
   return (
-    <div className="homepage">
+    // ── XP Window Shell ────────────────────────────────────────────
+    // `div.window` is the outermost xp.css class — it draws the raised
+    // 3D border that looks like a real XP application window.
+    // `homepage-window` adds our crisp-edge overrides (no border-radius).
+    <div className="window homepage-window">
       <TopAppBar />
-      
-      <section className="hero-section">
-        <div className="hero-content">
-          <MultiLineTypeWriter
-            lines={heroArt}
-            speed={40}
-            delay={300}
-            cursor={true}
-            cursorChar="|"
-            className="hero-typewriter"
-            lineClassName="hero-line"
-            loop={false}
-          />
-          <p className="hero-tagline">Building the future, one line of code at a time</p>
-        </div>
-      </section>
 
-      <section className="about-section">
-        <div className="container">
-          <h2>Welcome to ADC</h2>
-          <p className="lead">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor 
-            incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud 
-            exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-          </p>
-        </div>
-      </section>
+      {/* ── Window Body ──────────────────────────────────────────────
+       * `window-body` is an xp.css class that provides the interior
+       * padding and background of the window content area.
+       */}
+      <div className="window-body homepage-body">
 
-      <section className="features-section">
-        <div className="container">
-          <h2>What We Do</h2>
-          <div className="features-grid">
-            <div className="feature-card">
-              <div className="feature-icon">💻</div>
-              <h3>Learn & Grow</h3>
-              <p>
-                Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore 
-                eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident.
-              </p>
+        {/* ── IE6 Content Viewport ────────────────────────────────────
+         * This wrapper mimics the actual content viewport of Internet
+         * Explorer 6 — the white rectangle with a sunken/inset border
+         * where web pages rendered. It sits inside the grey browser
+         * chrome (toolbars above, status bar below) and visually
+         * separates "browser UI" from "page content".
+         *
+         * REACT CONCEPT — Wrapper / Container Components:
+         * This is a pure presentational wrapper — it doesn't manage
+         * state or handle events. Its only job is to apply layout and
+         * visual styling to its children. In React, wrapping children
+         * in a styled container like this is the standard way to group
+         * and style a set of sibling components without adding logic.
+         */}
+        <div className="ie6-content-viewport">
+
+        {/* ── Hero Section — Nested Terminal Window ──────────────────
+         * This section embeds a *second* xp.css `div.window` inside the
+         * main window body, creating the nested-window look.
+         *
+         * REACT CONCEPT — Component Composition:
+         * Instead of building one monolithic component, we compose small
+         * pieces of xp.css markup together. The `div.window` here reuses
+         * the exact same xp.css classes as the outer window. xp.css
+         * doesn't care about nesting depth — it styles each `.window`
+         * independently. This is the power of class-based CSS libraries:
+         * your component structure is decoupled from the styling.
+         */}
+        <section className="hero-section">
+          <div className="window terminal-window">
+            {/* ── Terminal Title Bar ─────────────────────────────────
+             * Same xp.css markup as the outer title bar. The
+             * `aria-label` values on the buttons tell xp.css which
+             * icons to render (Minimize / Maximize / Close).
+             */}
+            <div className="title-bar">
+              <div className="title-bar-text">
+                Application Development Club
+              </div>
+              <div className="title-bar-controls">
+                <button aria-label="Minimize"></button>
+                <button aria-label="Maximize"></button>
+                <button aria-label="Close"></button>
+              </div>
             </div>
-            
-            <div className="feature-card">
-              <div className="feature-icon">🚀</div>
-              <h3>Build Projects</h3>
-              <p>
-                Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium 
-                doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore.
-              </p>
-            </div>
-            
-            <div className="feature-card">
-              <div className="feature-icon">👥</div>
-              <h3>Network</h3>
-              <p>
-                At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis 
-                praesentium voluptatum deleniti atque corrupti quos dolores et quas.
-              </p>
-            </div>
-            
-            <div className="feature-card">
-              <div className="feature-icon">🎯</div>
-              <h3>Compete</h3>
-              <p>
-                Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus 
-                saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae.
-              </p>
+
+            {/* ── Terminal Body ───────────────────────────────────────
+             * Black background with gray monospace text — mimics the
+             * classic Windows command prompt. The `<pre>` prompt line
+             * appears first, then the typewriter animation plays below.
+             */}
+            <div className="window-body terminal-body">
+              <pre className="terminal-prompt">C:\&gt; _</pre>
+              <div className="hero-content">
+                <MultiLineTypeWriter
+                  lines={heroArt}
+                  speed={40}
+                  delay={300}
+                  cursor={true}
+                  cursorChar="|"
+                  className="hero-typewriter"
+                  lineClassName="hero-line"
+                  loop={false}
+                />
+                <p className="hero-tagline">Building the future, one line of code at a time</p>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="events-section">
-        <div className="container">
-          <h2>Upcoming Events</h2>
+        {/* ── About Section ──────────────────────────────────────────
+         * Uses an xp.css `fieldset` (GroupBox) to frame the intro text.
+         */}
+        <section className="about-section">
+          <fieldset>
+            <legend>Welcome to ADC</legend>
+            <p className="lead">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
+              incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+              exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+            </p>
+          </fieldset>
+        </section>
+
+        {/* ── Features Section ───────────────────────────────────────
+         * Each feature card is an xp.css `fieldset` (GroupBox) with a
+         * `legend` label — the classic XP "group of controls" pattern.
+         */}
+        <section className="features-section">
+          <h2 className="section-heading">What We Do</h2>
+          <div className="features-grid">
+            <fieldset className="feature-card">
+              <legend>Learn &amp; Grow</legend>
+              <div className="feature-icon">💻</div>
+              <p>
+                Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore
+                eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident.
+              </p>
+            </fieldset>
+
+            <fieldset className="feature-card">
+              <legend>Build Projects</legend>
+              <div className="feature-icon">🚀</div>
+              <p>
+                Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium
+                doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore.
+              </p>
+            </fieldset>
+
+            <fieldset className="feature-card">
+              <legend>Network</legend>
+              <div className="feature-icon">👥</div>
+              <p>
+                At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis
+                praesentium voluptatum deleniti atque corrupti quos dolores et quas.
+              </p>
+            </fieldset>
+
+            <fieldset className="feature-card">
+              <legend>Compete</legend>
+              <div className="feature-icon">🎯</div>
+              <p>
+                Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus
+                saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae.
+              </p>
+            </fieldset>
+          </div>
+        </section>
+
+        {/* ── Events Section ─────────────────────────────────────────
+         * Event cards use a simple table-like layout inside a fieldset.
+         */}
+        <section className="events-section">
+          <h2 className="section-heading">Upcoming Events</h2>
           <div className="events-list">
-            <div className="event-card">
-              <div className="event-date">
-                <span className="day">15</span>
-                <span className="month">MAR</span>
-              </div>
+            <fieldset className="event-card">
+              <legend>MAR 15</legend>
               <div className="event-details">
                 <h3>Workshop: Introduction to React</h3>
                 <p>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod 
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod
                   tempor incididunt ut labore et dolore magna aliqua.
                 </p>
                 <span className="event-time">6:00 PM - 8:00 PM</span>
               </div>
-            </div>
-            
-            <div className="event-card">
-              <div className="event-date">
-                <span className="day">22</span>
-                <span className="month">MAR</span>
-              </div>
+            </fieldset>
+
+            <fieldset className="event-card">
+              <legend>MAR 22</legend>
               <div className="event-details">
                 <h3>Hackathon 2026</h3>
                 <p>
-                  Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut 
+                  Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
                   aliquip ex ea commodo consequat.
                 </p>
                 <span className="event-time">All Day Event</span>
               </div>
-            </div>
-            
-            <div className="event-card">
-              <div className="event-date">
-                <span className="day">05</span>
-                <span className="month">APR</span>
-              </div>
+            </fieldset>
+
+            <fieldset className="event-card">
+              <legend>APR 05</legend>
               <div className="event-details">
                 <h3>Tech Talk: Cloud Computing</h3>
                 <p>
-                  Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore 
+                  Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore
                   eu fugiat nulla pariatur.
                 </p>
                 <span className="event-time">7:00 PM - 8:30 PM</span>
               </div>
-            </div>
+            </fieldset>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="cta-section">
-        <div className="container">
-          <h2>Join Us Today</h2>
-          <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor 
-            incididunt ut labore et dolore magna aliqua.
-          </p>
-          <button className="cta-button">Get Started</button>
-        </div>
-      </section>
+        {/* ── CTA Section ────────────────────────────────────────────
+         * Simple call-to-action with a native <button> element.
+         * xp.css automatically styles <button> with the classic 3D look.
+         */}
+        <section className="cta-section">
+          <fieldset>
+            <legend>Join Us Today</legend>
+            <p>
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+              incididunt ut labore et dolore magna aliqua.
+            </p>
+            <button className="cta-button">Get Started</button>
+          </fieldset>
+        </section>
+        </div>{/* ── end .ie6-content-viewport ── */}
+      </div>
 
-      <footer className="footer">
-        <div className="container">
-          <p>&copy; 2026 Application Development Club. All rights reserved.</p>
-          <div className="footer-links">
-            <a href="#">Contact</a>
-            <a href="#">Privacy Policy</a>
-            <a href="#">Terms of Service</a>
-          </div>
-        </div>
-      </footer>
-
-      <style>{`
-        .homepage {
-          min-height: 100vh;
-          background: #0a0a0a;
-          color: #ffffff;
-        }
-
-        .hero-section {
-          min-height: 80vh;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-          position: relative;
-          overflow: hidden;
-          padding: 2rem;
-        }
-
-        .hero-section::before {
-          content: '';
-          position: absolute;
-          width: 200%;
-          height: 200%;
-          background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
-          background-size: 50px 50px;
-          animation: gridMove 20s linear infinite;
-          opacity: 0.3;
-        }
-
-        @keyframes gridMove {
-          0% {
-            transform: translate(0, 0);
-          }
-          100% {
-            transform: translate(50px, 50px);
-          }
-        }
-
-        .hero-content {
-          position: relative;
-          z-index: 1;
-          text-align: center;
-        }
-
-        .hero-typewriter {
-          font-family: 'Courier New', monospace;
-          font-size: clamp(0.8rem, 2.5vw, 1.8rem);
-          font-weight: bold;
-          color: #00ff88;
-          text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
-        }
-
-        .hero-line {
-          line-height: 1.4;
-        }
-
-        .hero-tagline {
-          margin-top: 2rem;
-          font-size: 1.25rem;
-          color: #e0e0e0;
-          font-style: italic;
-          opacity: 0;
-          animation: fadeIn 1s ease-in 2s forwards;
-        }
-
-        @keyframes fadeIn {
-          to {
-            opacity: 1;
-          }
-        }
-
-        .container {
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: 0 2rem;
-        }
-
-        .about-section {
-          padding: 5rem 2rem;
-          background: #1a1a1a;
-          text-align: center;
-        }
-
-        .about-section h2 {
-          font-size: 2.5rem;
-          margin-bottom: 1.5rem;
-          color: #00ff88;
-        }
-
-        .lead {
-          font-size: 1.25rem;
-          line-height: 1.8;
-          color: #b0b0b0;
-          max-width: 800px;
-          margin: 0 auto;
-        }
-
-        .features-section {
-          padding: 5rem 2rem;
-          background: #0a0a0a;
-        }
-
-        .features-section h2 {
-          font-size: 2.5rem;
-          text-align: center;
-          margin-bottom: 3rem;
-          color: #00ff88;
-        }
-
-        .features-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-          gap: 2rem;
-        }
-
-        .feature-card {
-          background: #1a1a1a;
-          padding: 2rem;
-          border-radius: 12px;
-          border: 1px solid #333;
-          transition: transform 0.3s ease, border-color 0.3s ease;
-        }
-
-        .feature-card:hover {
-          transform: translateY(-5px);
-          border-color: #00ff88;
-        }
-
-        .feature-icon {
-          font-size: 3rem;
-          margin-bottom: 1rem;
-        }
-
-        .feature-card h3 {
-          font-size: 1.5rem;
-          margin-bottom: 1rem;
-          color: #ffffff;
-        }
-
-        .feature-card p {
-          color: #b0b0b0;
-          line-height: 1.6;
-        }
-
-        .events-section {
-          padding: 5rem 2rem;
-          background: #1a1a1a;
-        }
-
-        .events-section h2 {
-          font-size: 2.5rem;
-          text-align: center;
-          margin-bottom: 3rem;
-          color: #00ff88;
-        }
-
-        .events-list {
-          display: flex;
-          flex-direction: column;
-          gap: 1.5rem;
-          max-width: 900px;
-          margin: 0 auto;
-        }
-
-        .event-card {
-          display: flex;
-          gap: 2rem;
-          background: #0a0a0a;
-          padding: 2rem;
-          border-radius: 12px;
-          border: 1px solid #333;
-          transition: border-color 0.3s ease;
-        }
-
-        .event-card:hover {
-          border-color: #00ff88;
-        }
-
-        .event-date {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          background: #00ff88;
-          color: #0a0a0a;
-          padding: 1rem;
-          border-radius: 8px;
-          min-width: 80px;
-        }
-
-        .event-date .day {
-          font-size: 2rem;
-          font-weight: bold;
-          line-height: 1;
-        }
-
-        .event-date .month {
-          font-size: 0.875rem;
-          text-transform: uppercase;
-          margin-top: 0.25rem;
-        }
-
-        .event-details {
-          flex: 1;
-        }
-
-        .event-details h3 {
-          font-size: 1.5rem;
-          margin-bottom: 0.5rem;
-          color: #ffffff;
-        }
-
-        .event-details p {
-          color: #b0b0b0;
-          margin-bottom: 0.5rem;
-          line-height: 1.6;
-        }
-
-        .event-time {
-          color: #00ff88;
-          font-size: 0.875rem;
-          font-weight: 600;
-        }
-
-        .cta-section {
-          padding: 5rem 2rem;
-          background: linear-gradient(135deg, #0f3460 0%, #16213e 100%);
-          text-align: center;
-        }
-
-        .cta-section h2 {
-          font-size: 2.5rem;
-          margin-bottom: 1rem;
-          color: #ffffff;
-        }
-
-        .cta-section p {
-          font-size: 1.125rem;
-          color: #e0e0e0;
-          margin-bottom: 2rem;
-          max-width: 600px;
-          margin-left: auto;
-          margin-right: auto;
-        }
-
-        .cta-button {
-          padding: 1rem 3rem;
-          font-size: 1.125rem;
-          font-weight: 600;
-          background: #00ff88;
-          color: #0a0a0a;
-          border: none;
-          border-radius: 8px;
-          cursor: pointer;
-          transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .cta-button:hover {
-          transform: scale(1.05);
-          box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
-        }
-
-        .footer {
-          padding: 3rem 2rem;
-          background: #0a0a0a;
-          border-top: 1px solid #333;
-        }
-
-        .footer .container {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          flex-wrap: wrap;
-          gap: 1rem;
-        }
-
-        .footer p {
-          color: #666;
-          margin: 0;
-        }
-
-        .footer-links {
-          display: flex;
-          gap: 2rem;
-        }
-
-        .footer-links a {
-          color: #b0b0b0;
-          text-decoration: none;
-          transition: color 0.3s ease;
-        }
-
-        .footer-links a:hover {
-          color: #00ff88;
-        }
-
-        @media (max-width: 768px) {
-          .hero-typewriter {
-            font-size: clamp(0.6rem, 3vw, 1rem);
-          }
-
-          .hero-tagline {
-            font-size: 1rem;
-          }
-
-          .about-section h2,
-          .features-section h2,
-          .events-section h2,
-          .cta-section h2 {
-            font-size: 2rem;
-          }
-
-          .lead {
-            font-size: 1rem;
-          }
-
-          .features-grid {
-            grid-template-columns: 1fr;
-          }
-
-          .event-card {
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-          }
-
-          .footer .container {
-            flex-direction: column;
-            text-align: center;
-          }
-
-          .footer-links {
-            flex-direction: column;
-            gap: 1rem;
-          }
-        }
-      `}</style>
+      {/* ── Status Bar (Footer) ──────────────────────────────────────
+       * xp.css's `status-bar` class renders the classic bottom bar seen
+       * in XP apps like Explorer or Notepad.
+       *
+       * IE6 STATUS BAR LAYOUT:
+       * In the real Internet Explorer 6, the status bar had:
+       *   - Left field: "Done" (page load status) or a URL on hover
+       *   - Right field: "Internet" zone indicator (with a globe icon)
+       *
+       * We repurpose this to show club info on the left and a fake zone
+       * indicator on the right — blending the IE6 metaphor with real
+       * footer content. The middle field shows copyright.
+       *
+       * The `status-bar-field` class from xp.css gives each <p> the
+       * classic sunken inset border look with the 1px shadow ridges.
+       */}
+      <div className="status-bar ie6-status-bar">
+        <p className="status-bar-field status-bar__done">Done</p>
+        <p className="status-bar-field status-bar__info">&copy; 2026 Application Development Club</p>
+        <p className="status-bar-field status-bar__zone">Internet</p>
+      </div>
     </div>
   );
 };

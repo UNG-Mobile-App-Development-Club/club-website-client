@@ -1,204 +1,439 @@
+/*
+ * TopAppBar.css
+ *
+ * IE7-style consolidated browser chrome (XP grey, no Vista Aero).
+ *
+ * Layered on top of xp.css's built-in title-bar styles. xp.css provides
+ * the blue gradient, title text color, and window-control button icons.
+ * This file adds:
+ *   - IE7 consolidated navigation row (Back/Fwd + small buttons + site nav)
+ *   - IE7 address/search/utility row
+ *   - "Join Now" button in the title bar
+ *   - Mobile-responsive hamburger menu
+ *
+ * ── IE7 Toolbar Styling Notes ──
+ * IE7 kept the "cool buttons" flat-until-hovered look from IE6 but
+ * made Back/Forward larger and more prominent. The address bar and
+ * search box sit on the same row. Utility buttons (Page, Tools) use
+ * small dropdown-style flat buttons on the right.
+ *
+ * All browser-chrome buttons here are purely decorative — no click
+ * handlers or navigation logic. Only site nav links and external
+ * links are functional.
+ */
+
+/* ═══════════════════════════════════════════════════════════════════
+ * WRAPPER
+ * ═══════════════════════════════════════════════════════════════════ */
+
+/* The <header> containing all browser chrome.
+ * `position: sticky` pins it to the top on scroll.
+ * Explicit margin/padding reset prevents browser defaults. */
 .top-app-bar {
-  background: rgba(10, 10, 10, 0.95);
-  backdrop-filter: blur(10px);
-  color: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   position: sticky;
   top: 0;
   z-index: 1000;
-  border-bottom: 1px solid rgba(0, 255, 136, 0.1);
+  margin: 0;
+  padding: 0;
 }
 
-.top-app-bar__container {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 2rem;
-  height: 70px;
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
-.top-app-bar__left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex: 0 0 auto;
-}
-
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-family: 'Courier New', monospace;
-  font-size: 1.5rem;
+/* ═══════════════════════════════════════════════════════════════════
+ * TITLE BAR — JOIN NOW BUTTON
+ *
+ * The "Join Now" button sits inside xp.css's .title-bar-controls,
+ * to the left of the Minimize/Maximize/Close buttons. Instead of
+ * the default grey xp.css button (which creates a jarring white
+ * rectangle), we style it to blend into the blue title bar with
+ * a subtle lighter-blue background, white text, and a thin border
+ * that echoes the title bar's own gradient highlights.
+ * ═══════════════════════════════════════════════════════════════════ */
+.join-button {
+  font-size: 11px;
+  padding: 2px 12px;
+  margin-right: 8px;
+  font-family: "Tahoma", "MS Sans Serif", sans-serif;
   font-weight: bold;
+  color: #fff;
+  text-shadow: 1px 1px 0 #0f1089;
+
+  /* Blue background that sits a shade lighter than the title bar
+     gradient, making the button visible but not jarring. */
+  background: linear-gradient(180deg, #3a8cff 0%, #1a5cc7 100%);
+  border: 1px solid;
+  border-color: #70b0ff #003bb5 #003bb5 #70b0ff;
+
+  /* Override xp.css's default raised 3D box-shadow and sizing */
+  box-shadow: none;
+  min-height: 0;
+  height: auto;
+  width: auto;
   cursor: pointer;
-  transition: transform 0.3s ease;
 }
 
-.logo:hover {
-  transform: scale(1.05);
+/* Hover: slightly brighter blue to indicate interactivity */
+.join-button:hover {
+  background: linear-gradient(180deg, #52a0ff 0%, #2468d4 100%);
+  border-color: #8ac4ff #0044cc #0044cc #8ac4ff;
 }
 
-.logo-bracket {
-  color: #00ff88;
-  font-weight: bold;
+/* Active/pressed: darker, sunken feel */
+.join-button:active {
+  background: linear-gradient(180deg, #1050b0 0%, #0a3a8c 100%);
+  border-color: #003bb5 #70b0ff #70b0ff #003bb5;
 }
 
-.logo-text {
-  color: #ffffff;
-  letter-spacing: 0.05em;
-}
-
-.top-app-bar__nav {
+/* ═══════════════════════════════════════════════════════════════════
+ * ROW 1: CONSOLIDATED NAVIGATION
+ *
+ * Combines the old IE6 menu bar and standard-buttons toolbar into
+ * one tight row. Left side: large Back/Forward + small icon buttons.
+ * Right side: site navigation links.
+ *
+ * Layout: horizontal flex, silver #ece9d8 background, 1px border.
+ * ═══════════════════════════════════════════════════════════════════ */
+.ie7-nav-row {
   display: flex;
   align-items: center;
-  gap: 2rem;
-  flex: 1;
+  gap: 0;
+  padding: 1px 4px;
+  background: #ece9d8;
+  border-bottom: 1px solid #aca899;
+}
+
+/* ── Large Back / Forward Buttons ────────────────────────────────
+ * IE7 made these noticeably bigger than the other toolbar buttons
+ * to emphasize primary navigation. Flat by default, raised 3D
+ * border on hover, sunken on active — same "cool buttons" pattern.
+ */
+.ie7-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px 8px;
+  margin: 0 1px;
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: default;
+  font-family: "Tahoma", "MS Sans Serif", sans-serif;
+  font-size: 12px;
+  color: #000;
+  white-space: nowrap;
+  box-shadow: none;
+  min-width: 0;
+}
+
+.ie7-nav-btn:hover {
+  border-color: #fff #808080 #808080 #fff;
+  background: #ece9d8;
+}
+
+.ie7-nav-btn:active {
+  border-color: #808080 #fff #fff #808080;
+}
+
+/* Icon glyph inside the large buttons */
+.ie7-nav-btn__icon {
+  font-size: 14px;
+  line-height: 1;
+  display: inline-block;
+  width: 16px;
+  text-align: center;
+}
+
+/* Text label (only on Back button) */
+.ie7-nav-btn__label {
+  font-size: 11px;
+}
+
+/* Dropdown arrow on the Back button */
+.ie7-nav-btn__dropdown {
+  font-size: 8px;
+  margin-left: 1px;
+  color: #000;
+}
+
+/* Back button — slightly wider to fit label + dropdown */
+.ie7-nav-btn--back {
+  padding: 3px 6px 3px 8px;
+}
+
+/* Forward button — icon only, same height */
+.ie7-nav-btn--forward {
+  padding: 3px 6px;
+}
+
+/* ── Small Icon-Only Buttons ─────────────────────────────────────
+ * Stop, Refresh, Home, Search, Favorites, History — compact 22×22
+ * squares. Flat by default, raised on hover. Purely decorative.
+ */
+.ie7-nav-small-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  margin-left: 2px;
+}
+
+.ie7-nav-small-btn {
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: default;
+  font-size: 13px;
+  line-height: 1;
+  color: #000;
+  box-shadow: none;
+  min-width: 0;
+}
+
+.ie7-nav-small-btn:hover {
+  border-color: #fff #808080 #808080 #fff;
+  background: #ece9d8;
+}
+
+.ie7-nav-small-btn:active {
+  border-color: #808080 #fff #fff #808080;
+}
+
+/* ── Toolbar Separator ───────────────────────────────────────────
+ * Thin vertical etched groove between button groups.
+ * Two 1px lines (shadow + highlight) create a subtle ridge.
+ */
+.toolbar-separator {
+  display: inline-block;
+  width: 0;
+  height: 20px;
+  margin: 0 6px;
+  border-left: 1px solid #808080;
+  border-right: 1px solid #fff;
+}
+
+/* ── Site Navigation Links ───────────────────────────────────────
+ * Inline nav links within the toolbar row. These are the only
+ * functional elements in the navigation row (hash-anchor links).
+ */
+.ie7-site-nav {
+  display: flex;
+  align-items: center;
+  gap: 0;
 }
 
 .nav-link {
-  color: #b0b0b0;
+  display: inline-block;
+  padding: 3px 10px;
+  color: #000;
   text-decoration: none;
-  font-size: 0.95rem;
-  font-weight: 500;
-  transition: color 0.3s ease;
-  position: relative;
-  padding: 0.5rem 0;
-}
-
-.nav-link::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 0;
-  height: 2px;
-  background: #00ff88;
-  transition: width 0.3s ease;
+  font-size: 11px;
+  font-family: "Tahoma", "MS Sans Serif", sans-serif;
 }
 
 .nav-link:hover {
-  color: #00ff88;
+  background: #316ac5;
+  color: #fff;
 }
 
-.nav-link:hover::after {
-  width: 100%;
-}
-
-.top-app-bar__right {
+/* ═══════════════════════════════════════════════════════════════════
+ * ROW 2: ADDRESS + SEARCH + UTILITY
+ *
+ * Combines the address bar, a decorative search box, always-visible
+ * external links, and IE7-style utility buttons on one row.
+ *
+ * Layout: horizontal flex, silver #ece9d8 background, 1px border.
+ * ═══════════════════════════════════════════════════════════════════ */
+.ie7-address-row {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  flex: 0 0 auto;
+  gap: 4px;
+  padding: 2px 4px;
+  background: #ece9d8;
+  border-bottom: 1px solid #aca899;
 }
 
-.join-button {
-  padding: 0.625rem 1.5rem;
-  font-size: 0.95rem;
-  font-weight: 600;
-  background: transparent;
-  color: #00ff88;
-  border: 2px solid #00ff88;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.3s ease;
+/* "Address" text label */
+.ie7-address-row__label {
+  font-size: 11px;
+  font-family: "Tahoma", "MS Sans Serif", sans-serif;
+  color: #000;
+  padding: 0 4px;
   white-space: nowrap;
 }
 
-.join-button:hover {
-  background: #00ff88;
-  color: #0a0a0a;
-  box-shadow: 0 0 15px rgba(0, 255, 136, 0.4);
-  transform: translateY(-2px);
+/* URL input — takes remaining space via flex:1.
+ * xp.css auto-styles <input type="text"> with the sunken inset
+ * border, so no border rules are needed here. */
+.ie7-address-row__input {
+  flex: 1;
+  min-width: 0;
+  font-size: 11px;
+  padding: 2px 4px;
+  font-family: "Tahoma", "MS Sans Serif", sans-serif;
 }
 
+/* ── Search Box (decorative) ─────────────────────────────────────
+ * A compact input + button pair mimicking IE7's integrated search.
+ * The input has placeholder text "ADC Search" and is read-only.
+ */
+.ie7-search {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-left: 4px;
+}
+
+.ie7-search__input {
+  width: 140px;
+  font-size: 11px;
+  padding: 2px 4px;
+  font-family: "Tahoma", "MS Sans Serif", sans-serif;
+}
+
+.ie7-search__btn {
+  font-size: 13px;
+  padding: 1px 6px;
+  min-width: 0;
+  cursor: default;
+}
+
+/* ── Utility Cluster ─────────────────────────────────────────────
+ * Right-aligned group containing always-visible external links
+ * (GitHub, Discord, UNG) and decorative dropdown buttons (Page,
+ * Tools). The links are real <a> tags; the buttons are chrome.
+ */
+.ie7-utility-cluster {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-left: auto;
+  white-space: nowrap;
+  font-family: "Tahoma", "MS Sans Serif", sans-serif;
+  font-size: 11px;
+}
+
+/* Pipe divider between utility items */
+.ie7-utility-divider {
+  color: #aca899;
+  padding: 0 3px;
+  user-select: none;
+}
+
+/* External links — always visible and clickable */
+.ie7-utility-link {
+  color: #000;
+  text-decoration: none;
+  padding: 2px 4px;
+}
+
+.ie7-utility-link:hover {
+  background: #316ac5;
+  color: #fff;
+}
+
+/* Decorative dropdown buttons (Page ▾, Tools ▾) */
+.ie7-utility-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 6px;
+  margin: 0 1px;
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: default;
+  font-family: "Tahoma", "MS Sans Serif", sans-serif;
+  font-size: 11px;
+  color: #000;
+  white-space: nowrap;
+  box-shadow: none;
+  min-width: 0;
+}
+
+.ie7-utility-btn:hover {
+  border-color: #fff #808080 #808080 #fff;
+  background: #ece9d8;
+}
+
+.ie7-utility-btn:active {
+  border-color: #808080 #fff #fff #808080;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+ * MOBILE MENU
+ * ═══════════════════════════════════════════════════════════════════ */
+
+/* Hamburger toggle — hidden on desktop, visible below 768px */
 .mobile-menu-toggle {
   display: none;
   flex-direction: column;
-  gap: 5px;
-  background: transparent;
-  border: none;
+  gap: 4px;
+  background: #ece9d8;
+  border: 1px solid #aca899;
   cursor: pointer;
-  padding: 8px;
+  padding: 6px;
+  position: absolute;
+  right: 8px;
+  top: 32px;
 }
 
 .hamburger-line {
-  width: 25px;
+  width: 18px;
   height: 2px;
-  background: #00ff88;
-  transition: all 0.3s ease;
+  background: #000;
 }
 
+/* Dropdown menu on narrow viewports */
 .mobile-menu {
-  display: none;
+  display: flex;
   flex-direction: column;
-  padding: 1rem 2rem 2rem;
-  background: rgba(10, 10, 10, 0.98);
-  border-top: 1px solid rgba(0, 255, 136, 0.1);
+  background: #ece9d8;
+  border: 1px solid #aca899;
+  border-top: none;
+  padding: 4px 0;
 }
 
 .mobile-menu .nav-link {
-  padding: 0.75rem 0;
-  font-size: 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 6px 16px;
+  font-size: 12px;
+  border-bottom: 1px solid #d6d2c2;
 }
 
 .mobile-menu .nav-link:last-of-type {
   border-bottom: none;
 }
 
+/* External links section inside mobile menu */
+.mobile-menu-links {
+  border-top: 1px solid #aca899;
+  padding-top: 4px;
+}
+
+.mobile-menu-links .nav-link {
+  color: #316ac5;
+}
+
 .mobile-menu-action {
-  margin-top: 1.5rem;
+  padding: 8px 16px;
   display: flex;
   justify-content: center;
 }
 
-.mobile-menu-action .join-button {
-  width: 100%;
-  justify-content: center;
-}
-
-/* Responsive design */
-@media (max-width: 968px) {
-  .top-app-bar__container {
-    padding: 0 1.5rem;
-  }
-
-  .top-app-bar__nav {
-    gap: 1.5rem;
-  }
-
-  .nav-link {
-    font-size: 0.9rem;
-  }
-}
-
+/* ═══════════════════════════════════════════════════════════════════
+ * RESPONSIVE
+ * ═══════════════════════════════════════════════════════════════════ */
 @media (max-width: 768px) {
-  .top-app-bar__container {
-    height: 60px;
-    padding: 0 1rem;
-  }
-
-  .logo {
-    font-size: 1.25rem;
-  }
-
-  .top-app-bar__nav {
+  /* Hide the two desktop toolbar rows; show hamburger instead */
+  .ie7-nav-row {
     display: none;
   }
 
-  .top-app-bar__right {
+  .ie7-address-row {
     display: none;
   }
 
   .mobile-menu-toggle {
-    display: flex;
-  }
-
-  .mobile-menu {
     display: flex;
   }
 }
