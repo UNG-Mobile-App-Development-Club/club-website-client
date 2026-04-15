@@ -4,6 +4,7 @@
  * All styles for the Homepage component, themed to match Windows XP Luna.
  * xp.css handles window frames, fieldsets, buttons, title bars, and
  * status bars. This file covers:
+ *   - XP desktop surface and desktop icons
  *   - Crisp window edge overrides (no border-radius, no antialiasing)
  *   - Nested terminal window styling
  *   - Section layouts & backgrounds
@@ -17,6 +18,296 @@
  *   Dark blue:     #003399
  *   Text:          #000
  */
+
+/* ═══════════════════════════════════════════════════════════════════
+ * XP DESKTOP SURFACE
+ *
+ * The outermost container that fills the viewport and acts as the
+ * Windows XP desktop. The Bliss wallpaper is on <body> (index.css),
+ * so this container is transparent — the hills show through.
+ * Desktop icons and the browser window sit on top of this surface.
+ *
+ * `position: relative` creates a positioning context so the desktop
+ * icons (which use absolute positioning) stay within bounds.
+ * ═══════════════════════════════════════════════════════════════════ */
+.xp-desktop {
+  position: relative;
+  min-height: 100vh;
+  padding: 8px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+ * DESKTOP ICONS
+ *
+ * XP arranged desktop icons in a column-first grid: icons flow
+ * top-to-bottom, then wrap to the next column to the right. We
+ * replicate this with CSS Grid using `grid-auto-flow: column`.
+ *
+ * Each icon is a <button> with:
+ *   - A CSS-only icon graphic (globe or folder)
+ *   - A white text label with dark drop shadow (XP style)
+ *
+ * Icons are positioned in the top-left corner, matching XP's default
+ * icon placement.
+ * ═══════════════════════════════════════════════════════════════════ */
+.desktop-icons {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: grid;
+  grid-template-rows: repeat(4, auto);
+  grid-auto-flow: column;
+  gap: 8px;
+  z-index: 1;
+}
+
+/* ── Individual Desktop Icon ─────────────────────────────────────── */
+.desktop-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 72px;
+  padding: 4px;
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: default;
+  box-shadow: none;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* Focus state: XP shows a dotted focus rectangle */
+.desktop-icon:focus {
+  outline: 1px dotted #fff;
+  outline-offset: -1px;
+}
+
+/* Selected/active state: blue highlight like XP's icon selection */
+.desktop-icon:active .desktop-icon__label,
+.desktop-icon:focus .desktop-icon__label {
+  background: #316ac5;
+  color: #fff;
+}
+
+/* ── Icon Image Container ────────────────────────────────────────── */
+.desktop-icon__img {
+  width: 48px;
+  height: 48px;
+  position: relative;
+  /* Crisp rendering — prevents the browser from anti-aliasing our
+     hard pixel edges, keeping the retro aesthetic sharp. */
+  image-rendering: pixelated;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+ * GLOBE ICON (IE / Website shortcut)
+ *
+ * Recreates the classic Internet Explorer desktop icon from Windows
+ * XP — a blue globe with latitude/longitude grid lines, the iconic
+ * italic "e", and an orbit ring circling the globe.
+ *
+ * Structure:
+ *   - Base element: Blue globe sphere with multi-stop gradient
+ *     (stepped, not smooth — gives a more "rendered" XP feel)
+ *   - ::before: Tilted orbit ring around the globe (the "swoosh"
+ *     that made the IE icon so recognizable)
+ *   - ::after: The italic "e" brand mark with heavy drop shadow
+ *
+ * The globe also uses a layered background of repeating-linear-gradient
+ * stripes to simulate latitude/longitude lines. These hard-edged
+ * 1px lines look more like pixel art than the old smooth crosshairs.
+ * ═══════════════════════════════════════════════════════════════════ */
+.desktop-icon__img--globe {
+  /* Stepped blue gradient — hard stops give a "banded" look that
+     feels more like a rendered 3D model than a smooth CSS gradient.
+     XP icons used this stepped shading technique extensively. */
+  background:
+    /* Latitude lines — horizontal stripes at fixed intervals */
+    repeating-linear-gradient(
+      180deg,
+      transparent 0px,
+      transparent 8px,
+      rgba(255,255,255,0.25) 8px,
+      rgba(255,255,255,0.25) 9px
+    ),
+    /* Longitude lines — vertical stripes at fixed intervals */
+    repeating-linear-gradient(
+      90deg,
+      transparent 0px,
+      transparent 10px,
+      rgba(255,255,255,0.2) 10px,
+      rgba(255,255,255,0.2) 11px
+    ),
+    /* Globe sphere — stepped gradient with hard color bands */
+    linear-gradient(
+      160deg,
+      #7ec8ff 0%,
+      #7ec8ff 8%,
+      #4a9ff5 8%,
+      #4a9ff5 20%,
+      #2b7de0 20%,
+      #2b7de0 40%,
+      #1560c7 40%,
+      #1560c7 60%,
+      #0d47a1 60%,
+      #0d47a1 80%,
+      #0a2e6b 80%
+    );
+  border-radius: 50%;
+  /* Inset shadow creates the 3D sphere illusion — highlight at
+     top-left, deep shadow at bottom-right */
+  box-shadow:
+    inset -3px -3px 6px rgba(0, 0, 0, 0.5),
+    inset 2px 2px 4px rgba(255, 255, 255, 0.3),
+    1px 2px 3px rgba(0, 0, 0, 0.4);
+  border: 1px solid #0a2e6b;
+}
+
+/* Orbit ring — the tilted elliptical swoosh that circles the globe.
+ * In the real IE icon this was a gold/white ring. We create it with
+ * a rotated border-ellipse that extends slightly beyond the globe. */
+.desktop-icon__img--globe::before {
+  content: '';
+  position: absolute;
+  /* Position the ring so it orbits around the globe center */
+  top: -2px;
+  left: -5px;
+  width: 56px;
+  height: 38px;
+  border: 2px solid transparent;
+  /* Only the bottom arc of the ellipse is visible — this creates
+     the "swoosh passing in front of the globe" effect */
+  border-bottom-color: #ffe066;
+  border-right-color: #ffd633;
+  border-radius: 50%;
+  /* Tilt the ring ~30° to match XP's icon perspective */
+  transform: rotate(-30deg);
+  /* Render above the globe surface but below the "e" */
+  z-index: 1;
+}
+
+/* The italic "e" — IE's brand mark.
+ * XP's version was large, white, bold, with a strong drop shadow.
+ * We use Georgia italic for the classic serif "e" shape. */
+.desktop-icon__img--globe::after {
+  content: 'e';
+  position: absolute;
+  top: 48%;
+  left: 52%;
+  transform: translate(-50%, -50%);
+  font-family: "Georgia", "Times New Roman", serif;
+  font-style: italic;
+  font-weight: bold;
+  font-size: 30px;
+  color: #fff;
+  /* Heavy multi-layer drop shadow — XP icons had strong shadows
+     to make them readable against any background */
+  text-shadow:
+    1px 1px 0 #0a2e6b,
+    2px 2px 0 rgba(0, 0, 0, 0.5),
+    0 0 4px rgba(0, 50, 150, 0.6);
+  line-height: 1;
+  z-index: 2;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+ * FOLDER ICON (Project shortcuts)
+ *
+ * Recreates the classic Windows XP manila folder icon with proper
+ * 3D perspective. XP folders had:
+ *   - A back panel (darker) visible behind the front
+ *   - A front panel (lighter) with highlight/shadow edges
+ *   - A tab on the back panel's top-left corner
+ *   - Documents/papers peeking out the top
+ *
+ * Structure:
+ *   - Base element: Front panel (lighter yellow with 3D edges)
+ *   - ::before: Back panel + tab (darker yellow, sits behind)
+ *   - ::after: Document edge peeking out (white paper)
+ *
+ * The 3D effect comes from carefully crafted border-color values:
+ *   - Top/left borders are lighter (highlight from top-left light)
+ *   - Bottom/right borders are darker (shadow)
+ * This is the exact technique Windows XP used across all its UI.
+ * ═══════════════════════════════════════════════════════════════════ */
+.desktop-icon__img--folder {
+  /* Front panel — lighter yellow, stepped gradient for the XP look */
+  background: linear-gradient(
+    180deg,
+    #ffe680 0%,
+    #ffe680 30%,
+    #ffd740 30%,
+    #ffd740 60%,
+    #f5c518 60%,
+    #f5c518 85%,
+    #e6b000 85%
+  );
+  /* 3D raised edges — classic XP highlight/shadow border */
+  border: 1px solid;
+  border-color: #ffe88a #b08200 #9a7000 #ffe88a;
+  border-radius: 0;
+  position: relative;
+  /* Front panel sits lower and is slightly smaller than full icon,
+     leaving room for the back panel/tab behind it */
+  margin-top: 14px;
+  height: 34px;
+  width: 42px;
+  margin-left: 3px;
+  /* Raised feel via box-shadow */
+  box-shadow:
+    1px 2px 3px rgba(0, 0, 0, 0.3),
+    inset 1px 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+/* Back panel + tab — darker yellow, positioned behind and above
+ * the front panel. The tab is part of this element's shape,
+ * created by clipping the top-right corner. */
+.desktop-icon__img--folder::before {
+  content: '';
+  position: absolute;
+  /* Sits behind and above the front panel */
+  top: -12px;
+  left: -2px;
+  width: 42px;
+  height: 14px;
+  /* Back panel visible above front — darker shade */
+  background: linear-gradient(180deg, #eab000 0%, #d9a000 100%);
+  border: 1px solid;
+  border-color: #f5c518 #9a7000 transparent #9a7000;
+  border-bottom: none;
+  /* The tab shape — only the left side has rounded corners,
+     and the tab only extends partway across */
+  clip-path: polygon(0 0, 40% 0, 50% 40%, 100% 40%, 100% 100%, 0 100%);
+}
+
+/* Document peeking out — white paper edge visible between the
+ * front and back panels, suggesting the folder contains files */
+.desktop-icon__img--folder::after {
+  content: '';
+  position: absolute;
+  top: -7px;
+  left: 8px;
+  width: 28px;
+  height: 8px;
+  /* White paper with a subtle shadow to separate it from the folder */
+  background: linear-gradient(180deg, #fff 0%, #f0f0f0 100%);
+  border: 1px solid #c0c0c0;
+  border-bottom: none;
+}
+
+/* ── Icon Label ──────────────────────────────────────────────────── */
+.desktop-icon__label {
+  font-family: "Tahoma", "MS Sans Serif", sans-serif;
+  font-size: 11px;
+  color: #fff;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+  text-align: center;
+  word-wrap: break-word;
+  max-width: 68px;
+  padding: 1px 2px;
+  line-height: 1.2;
+}
 
 /* ═══════════════════════════════════════════════════════════════════
  * CHANGE 1: CRISP WINDOW EDGES
@@ -341,6 +632,17 @@
 
   .section-heading {
     font-size: 13px;
+  }
+
+  /* On mobile, stack icons horizontally along the top
+     so they don't overlap the full-width browser window */
+  .desktop-icons {
+    position: static;
+    grid-template-rows: none;
+    grid-auto-flow: row;
+    grid-template-columns: repeat(auto-fill, 72px);
+    justify-content: center;
+    margin-bottom: 8px;
   }
 }
 

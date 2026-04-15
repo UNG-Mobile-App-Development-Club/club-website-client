@@ -48,10 +48,27 @@ import './TopAppBar.css';
 interface TopAppBarProps {
   /** Text displayed in the XP title bar */
   title?: string;
+
+  /**
+   * Callback fired when the user clicks the Close (X) button.
+   *
+   * REACT CONCEPT — Callback Props:
+   * Instead of the child component deciding *what happens* on close, the
+   * parent decides by passing a function. This keeps TopAppBar reusable —
+   * one parent might hide the browser window, another might show a dialog.
+   * The child simply calls `onClose()` and the parent handles the logic.
+   * This is called "lifting state up" or "inversion of control".
+   *
+   * The `?` makes it optional — if no callback is passed, the Close button
+   * is rendered but does nothing (purely decorative), matching the default
+   * behavior of the Minimize and Maximize buttons.
+   */
+  onClose?: () => void;
 }
 
 export const TopAppBar: React.FC<TopAppBarProps> = ({
   title = 'University of North Georgia',
+  onClose,
 }) => {
   // ── State ──────────────────────────────────────────────────────
   // Controls whether the mobile hamburger menu is expanded.
@@ -88,20 +105,35 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({
   return (
     <header className="top-app-bar">
       {/* ── XP Title Bar ──────────────────────────────────────────
-       * Uses xp.css semantic classes: `title-bar`, `title-bar-text`,
-       * and `title-bar-controls`. The `aria-label` on each button tells
-       * xp.css which icon to render (Minimize / Maximize / Close).
+       * The title bar uses flexbox (set by xp.css) with three children:
        *
-       * The "Join Now" button sits in the title bar, to the left of
-       * the window controls, giving it maximum visibility.
+       *   1. `.title-bar-text`   — window title (gets margin-right: auto
+       *                            via our CSS, pushing everything else
+       *                            to the far right)
+       *   2. `.join-button`      — compact CTA styled as a standard grey
+       *                            xp.css button
+       *   3. `.title-bar-controls` — Minimize / Maximize / Close
+       *
+       * WHY IS "JOIN NOW" OUTSIDE `.title-bar-controls`?
+       * xp.css applies special SVG background-image icons to buttons
+       * inside `.title-bar-controls` based on their `aria-label`. If we
+       * put "Join Now" in there, it would inherit those SVG styles and
+       * potentially break the window-control icons. Keeping it as a
+       * sibling gives us full styling control without side effects.
+       *
+       * REACT CONCEPT — Optional Chaining on Callbacks:
+       * The Close button uses `onClick={onClose}`. If `onClose` is
+       * undefined (the parent didn't pass it), React simply ignores
+       * the click — no error, no crash. This is safe because React
+       * treats `undefined` event handlers as "no handler attached".
        */}
       <div className="title-bar">
         <div className="title-bar-text">{title}</div>
+        <button className="join-button">Join Now</button>
         <div className="title-bar-controls">
-          <button className="join-button">Join Now</button>
           <button aria-label="Minimize"></button>
           <button aria-label="Maximize"></button>
-          <button aria-label="Close"></button>
+          <button aria-label="Close" onClick={onClose}></button>
         </div>
       </div>
 

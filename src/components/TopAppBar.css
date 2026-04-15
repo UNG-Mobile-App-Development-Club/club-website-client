@@ -38,48 +38,67 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════
+ * TITLE BAR — LAYOUT LOCK
+ *
+ * xp.css already sets `display: flex` and `justify-content: space-between`
+ * on `.title-bar`. We reinforce the layout here to prevent vertical
+ * expansion and ensure the three children (title text, Join button,
+ * window controls) stay on one line.
+ *
+ * KEY TECHNIQUE — margin-right: auto:
+ * Setting `margin-right: auto` on `.title-bar-text` eats all remaining
+ * horizontal space between the title and the Join button. This pushes
+ * both the button and `.title-bar-controls` flush-right, regardless of
+ * how many children are in the flex container. It's like a flex-grow
+ * spacer but applied to a specific element's margin.
+ * ═══════════════════════════════════════════════════════════════════ */
+.title-bar {
+  flex-wrap: nowrap !important;
+}
+
+.title-bar .title-bar-text {
+  margin-right: auto;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
  * TITLE BAR — JOIN NOW BUTTON
  *
- * The "Join Now" button sits inside xp.css's .title-bar-controls,
- * to the left of the Minimize/Maximize/Close buttons. Instead of
- * the default grey xp.css button (which creates a jarring white
- * rectangle), we style it to blend into the blue title bar with
- * a subtle lighter-blue background, white text, and a thin border
- * that echoes the title bar's own gradient highlights.
+ * Styled as a compact, standard grey xp.css button. We intentionally
+ * let xp.css's default `<button>` styles provide the 3D raised border
+ * and grey background (the classic Windows control look). We only
+ * override sizing and spacing to keep it slim enough not to stretch
+ * the title bar beyond its natural 21px content height.
+ *
+ * This button lives OUTSIDE `.title-bar-controls` so xp.css won't
+ * apply window-control SVG icons to it. It sits as a direct child
+ * of `.title-bar`, between the title text and the Min/Max/Close group.
  * ═══════════════════════════════════════════════════════════════════ */
 .join-button {
-  font-size: 11px;
-  padding: 2px 12px;
-  margin-right: 8px;
   font-family: "Tahoma", "MS Sans Serif", sans-serif;
+  font-size: 11px;
   font-weight: bold;
-  color: #fff;
-  text-shadow: 1px 1px 0 #0f1089;
-
-  /* Blue background that sits a shade lighter than the title bar
-     gradient, making the button visible but not jarring. */
-  background: linear-gradient(180deg, #3a8cff 0%, #1a5cc7 100%);
-  border: 1px solid;
-  border-color: #70b0ff #003bb5 #003bb5 #70b0ff;
-
-  /* Override xp.css's default raised 3D box-shadow and sizing */
-  box-shadow: none;
+  padding: 0 8px;
+  margin: 0 4px;
   min-height: 0;
-  height: auto;
-  width: auto;
+  min-width: 0;
+  height: 18px;
+  line-height: 1;
   cursor: pointer;
+
+  /* Prevent the button from stretching in the cross axis */
+  align-self: center;
+  flex: none;
 }
 
-/* Hover: slightly brighter blue to indicate interactivity */
+/* Hover: xp.css defaults handle the raised 3D look, we just
+   nudge the background slightly lighter for feedback */
 .join-button:hover {
-  background: linear-gradient(180deg, #52a0ff 0%, #2468d4 100%);
-  border-color: #8ac4ff #0044cc #0044cc #8ac4ff;
+  background: #e8e8e0;
 }
 
-/* Active/pressed: darker, sunken feel */
+/* Active/pressed: xp.css handles the sunken border swap */
 .join-button:active {
-  background: linear-gradient(180deg, #1050b0 0%, #0a3a8c 100%);
-  border-color: #003bb5 #70b0ff #70b0ff #003bb5;
+  background: #d6d2c2;
 }
 
 /* ═══════════════════════════════════════════════════════════════════
