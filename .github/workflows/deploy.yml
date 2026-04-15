@@ -1,0 +1,42 @@
+name: Deploy Redesign Website
+
+on:
+  push:
+    branches:
+      - Redesign  # Changed to trigger on your redesign branch
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: Redesign-Deploy
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies and Build
+        run: |
+          npm install
+          npm run build
+
+      - name: Deploy to VPS via rsync
+        uses: Burnett01/rsync-deployments@7.0.1
+        with:
+          switches: -avzr --delete
+          path: dist/
+          remote_path: /var/www/codehawks
+          remote_host: ${{ secrets.VPS_HOST }}
+          remote_user: ${{ secrets.VPS_USER }}
+          remote_key: ${{ secrets.VPS_SSH_KEY }}
+
+      - name: Cloudflare Purge Cache
+        uses: nathanvaughn/actions-cloudflare-purge@v4.0.0
+        with:
+          cf_zone: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          cf_auth: ${{ secrets.CLOUDFLARE_API_TOKEN }}
