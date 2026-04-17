@@ -205,7 +205,7 @@ export const Homepage: React.FC = () => {
                       lineClassName="hero-line"
                       loop={false}
                     />
-                    <p className="hero-tagline">Building the future, one line of code at a time</p>
+                    <p className="hero-tagline">Software Engineering @ UNG</p>
                   </div>
                 </div>
               </div>
