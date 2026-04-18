@@ -2,6 +2,10 @@ import React, { useState } from 'react';
 import { MultiLineTypeWriter } from '../components/MultiLineTypeWriter';
 import TopAppBar from '../components/TopAppBar';
 import './Homepage.css';
+import xpMonitor from '../assets/xp-monitor.svg';
+import xpRocket from '../assets/xp-rocket.svg';
+import xpPeople from '../assets/xp-people.svg';
+import xpTarget from '../assets/xp-target.svg';
 
 /**
  * Homepage — The main (and currently only) page of the ADC website.
@@ -155,8 +159,7 @@ export const Homepage: React.FC = () => {
        *
        * WHY NOT `display: none`?
        * We *could* toggle CSS visibility instead of unmounting. But
-       * conditional rendering is more idiomatic React — it completely
-       * removes the DOM nodes, freeing memory and stopping any
+       * removing the DOM nodes frees memory and stops any
        * animations or timers inside the unmounted subtree. For a
        * complex component like the browser window, this is cleaner.
        */}
@@ -232,7 +235,9 @@ export const Homepage: React.FC = () => {
                     <div className="title-bar-text">Learn &amp; Grow</div>
                   </div>
                   <div className="window-body feature-window-body">
-                    <div className="feature-icon">💻</div>
+                    <div className="feature-icon">
+                      <img src={xpMonitor} alt="Windows XP Monitor" style={{ width: 28, height: 28, verticalAlign: 'middle' }} />
+                    </div>
                     <p>
                       Expand your skills with hands-on coding sessions, workshops, and peer learning. We cover everything from the basics to advanced topics, so you can grow at your own pace and ask questions any time.
                     </p>
@@ -245,7 +250,9 @@ export const Homepage: React.FC = () => {
                     <div className="title-bar-text">Build Projects</div>
                   </div>
                   <div className="window-body feature-window-body">
-                    <div className="feature-icon">🚀</div>
+                    <div className="feature-icon">
+                      <img src={xpRocket} alt="Windows XP Rocket" style={{ width: 28, height: 28, verticalAlign: 'middle' }} />
+                    </div>
                     <p>
                       Work together on real projects that make a difference. Whether you want to build apps, games, or websites, you will find teammates and mentors ready to help you turn your ideas into reality.
                     </p>
@@ -258,7 +265,9 @@ export const Homepage: React.FC = () => {
                     <div className="title-bar-text">Network</div>
                   </div>
                   <div className="window-body feature-window-body">
-                    <div className="feature-icon">👥</div>
+                    <div className="feature-icon">
+                      <img src={xpPeople} alt="Windows XP People" style={{ width: 28, height: 28, verticalAlign: 'middle' }} />
+                    </div>
                     <p>
                       Meet new friends and connect with students who share your interests. Our club is a great place to network, share experiences, and support each other as we learn and grow together.
                     </p>
@@ -271,7 +280,9 @@ export const Homepage: React.FC = () => {
                     <div className="title-bar-text">Compete</div>
                   </div>
                   <div className="window-body feature-window-body">
-                    <div className="feature-icon">🎯</div>
+                    <div className="feature-icon">
+                      <img src={xpTarget} alt="Windows XP Target" style={{ width: 28, height: 28, verticalAlign: 'middle' }} />
+                    </div>
                     <p>
                       Challenge yourself in coding competitions and hackathons. Test your skills, learn from others, and celebrate your achievements in a fun and encouraging environment.
                     </p>
@@ -282,7 +293,20 @@ export const Homepage: React.FC = () => {
 
             {/* ── Events Section ─────────────────────────────────── */}
             <section className="events-section">
-              <h2 className="section-heading">Upcoming Events</h2>
+              <h2 className="section-heading">
+                <span className="xp-calendar-icon" aria-hidden="true">
+                  {/* SVG: Windows XP-style calendar icon */}
+                  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="3" y="6" width="26" height="22" rx="5" fill="#fff" stroke="#316ac5" stroke-width="2"/>
+                    <rect x="3" y="6" width="26" height="6" rx="2" fill="#316ac5"/>
+                    <rect x="7" y="10" width="18" height="2" rx="1" fill="#7ec8ff"/>
+                    <rect x="8" y="15" width="4" height="4" rx="1.2" fill="#eaf3ff" stroke="#316ac5" stroke-width="1"/>
+                    <rect x="14" y="15" width="4" height="4" rx="1.2" fill="#eaf3ff" stroke="#316ac5" stroke-width="1"/>
+                    <rect x="20" y="15" width="4" height="4" rx="1.2" fill="#eaf3ff" stroke="#316ac5" stroke-width="1"/>
+                  </svg>
+                </span>
+                <span className="events-splash-animate">Upcoming Events</span>
+              </h2>
               <div className="events-list">
                 <fieldset className="event-card">
                   <legend>APR 22</legend>
@@ -300,7 +324,7 @@ export const Homepage: React.FC = () => {
                   <div className="event-details">
                     <h3>Code and Coffee</h3>
                     <p>
-                      Bring your laptop and your favorite mug! This is a relaxed, social coding session—work on personal projects, get help from peers, or just hang out and chat about tech over coffee.
+                      Bring your laptop and your favorite mug! This is a relaxed, social coding session - work on personal projects, get help from peers, or just hang out and chat about tech over coffee.
                     </p>
                     <span className="event-time">12:00 PM - 1:00 PM</span>
                   </div>
@@ -311,7 +335,7 @@ export const Homepage: React.FC = () => {
                   <div className="event-details">
                     <h3>Website Launch Party</h3>
                     <p>
-                      Celebrate the official launch of our new club website! We'll demo features, thank contributors, and enjoy snacks and XP-themed fun. Everyone is invited—don't miss it!
+                      Celebrate the official launch of our new club website! We'll demo features, thank contributors, and enjoy snacks and retro themed fun. Everyone is invited—don't miss it!
                     </p>
                     <span className="event-time">1:00 PM - 2:00 PM</span>
                   </div>
