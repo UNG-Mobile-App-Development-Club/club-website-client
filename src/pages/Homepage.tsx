@@ -216,52 +216,67 @@ export const Homepage: React.FC = () => {
               <fieldset>
                 <legend>Welcome to ADC</legend>
                 <p className="lead">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
-                  incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
-                  exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                  Welcome to the Application Development Club at the University of North Georgia! We meet every Wednesday and Friday to learn, build projects, and connect with others who love technology. Everyone is welcome, no experience needed. Join us and let's grow together!
                 </p>
               </fieldset>
             </section>
 
             {/* ── Features Section ───────────────────────────────── */}
+
             <section className="features-section">
               <h2 className="section-heading">What We Do</h2>
               <div className="features-grid">
-                <fieldset className="feature-card">
-                  <legend>Learn &amp; Grow</legend>
-                  <div className="feature-icon">💻</div>
-                  <p>
-                    Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore
-                    eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident.
-                  </p>
-                </fieldset>
+                {/* Learn & Grow Notepad Window */}
+                <div className="window feature-window">
+                  <div className="title-bar">
+                    <div className="title-bar-text">Learn &amp; Grow</div>
+                  </div>
+                  <div className="window-body feature-window-body">
+                    <div className="feature-icon">💻</div>
+                    <p>
+                      Expand your skills with hands-on coding sessions, workshops, and peer learning. We cover everything from the basics to advanced topics, so you can grow at your own pace and ask questions any time.
+                    </p>
+                  </div>
+                </div>
 
-                <fieldset className="feature-card">
-                  <legend>Build Projects</legend>
-                  <div className="feature-icon">🚀</div>
-                  <p>
-                    Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium
-                    doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore.
-                  </p>
-                </fieldset>
+                {/* Build Projects Notepad Window */}
+                <div className="window feature-window">
+                  <div className="title-bar">
+                    <div className="title-bar-text">Build Projects</div>
+                  </div>
+                  <div className="window-body feature-window-body">
+                    <div className="feature-icon">🚀</div>
+                    <p>
+                      Work together on real projects that make a difference. Whether you want to build apps, games, or websites, you will find teammates and mentors ready to help you turn your ideas into reality.
+                    </p>
+                  </div>
+                </div>
 
-                <fieldset className="feature-card">
-                  <legend>Network</legend>
-                  <div className="feature-icon">👥</div>
-                  <p>
-                    At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis
-                    praesentium voluptatum deleniti atque corrupti quos dolores et quas.
-                  </p>
-                </fieldset>
+                {/* Network Notepad Window */}
+                <div className="window feature-window">
+                  <div className="title-bar">
+                    <div className="title-bar-text">Network</div>
+                  </div>
+                  <div className="window-body feature-window-body">
+                    <div className="feature-icon">👥</div>
+                    <p>
+                      Meet new friends and connect with students who share your interests. Our club is a great place to network, share experiences, and support each other as we learn and grow together.
+                    </p>
+                  </div>
+                </div>
 
-                <fieldset className="feature-card">
-                  <legend>Compete</legend>
-                  <div className="feature-icon">🎯</div>
-                  <p>
-                    Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus
-                    saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae.
-                  </p>
-                </fieldset>
+                {/* Compete Notepad Window */}
+                <div className="window feature-window">
+                  <div className="title-bar">
+                    <div className="title-bar-text">Compete</div>
+                  </div>
+                  <div className="window-body feature-window-body">
+                    <div className="feature-icon">🎯</div>
+                    <p>
+                      Challenge yourself in coding competitions and hackathons. Test your skills, learn from others, and celebrate your achievements in a fun and encouraging environment.
+                    </p>
+                  </div>
+                </div>
               </div>
             </section>
 
@@ -270,38 +285,35 @@ export const Homepage: React.FC = () => {
               <h2 className="section-heading">Upcoming Events</h2>
               <div className="events-list">
                 <fieldset className="event-card">
-                  <legend>MAR 15</legend>
+                  <legend>APR 22</legend>
                   <div className="event-details">
-                    <h3>Workshop: Introduction to React</h3>
+                    <h3>App Development Club Weekly Meeting</h3>
                     <p>
-                      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod
-                      tempor incididunt ut labore et dolore magna aliqua.
+                      Join us for our regular club meeting! We'll discuss ongoing projects, upcoming opportunities, and help each other with app ideas and coding challenges. All skill levels welcome.
                     </p>
-                    <span className="event-time">6:00 PM - 8:00 PM</span>
+                    <span className="event-time">1:00 PM - 2:00 PM</span>
                   </div>
                 </fieldset>
 
                 <fieldset className="event-card">
-                  <legend>MAR 22</legend>
+                  <legend>APR 24</legend>
                   <div className="event-details">
-                    <h3>Hackathon 2026</h3>
+                    <h3>Code and Coffee</h3>
                     <p>
-                      Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-                      aliquip ex ea commodo consequat.
+                      Bring your laptop and your favorite mug! This is a relaxed, social coding session—work on personal projects, get help from peers, or just hang out and chat about tech over coffee.
                     </p>
-                    <span className="event-time">All Day Event</span>
+                    <span className="event-time">12:00 PM - 1:00 PM</span>
                   </div>
                 </fieldset>
 
                 <fieldset className="event-card">
-                  <legend>APR 05</legend>
+                  <legend>APR 29</legend>
                   <div className="event-details">
-                    <h3>Tech Talk: Cloud Computing</h3>
+                    <h3>Website Launch Party</h3>
                     <p>
-                      Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore
-                      eu fugiat nulla pariatur.
+                      Celebrate the official launch of our new club website! We'll demo features, thank contributors, and enjoy snacks and XP-themed fun. Everyone is invited—don't miss it!
                     </p>
-                    <span className="event-time">7:00 PM - 8:30 PM</span>
+                    <span className="event-time">1:00 PM - 2:00 PM</span>
                   </div>
                 </fieldset>
               </div>
@@ -312,10 +324,9 @@ export const Homepage: React.FC = () => {
               <fieldset>
                 <legend>Join Us Today</legend>
                 <p>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-                  incididunt ut labore et dolore magna aliqua.
+                  Join us on UNG Connect to stay up to date with our meetings, events, and announcements. It's the best way to get involved and never miss out!
                 </p>
-                <button className="cta-button">Get Started</button>
+                <button className="cta-button" onClick={() => window.open("https://connect.ung.edu/organization/app-development-club-of-ung--dah-", "_blank", "noopener,noreferrer")}>Get Started</button>
               </fieldset>
             </section>
             </div>{/* ── end .ie6-content-viewport ── */}
