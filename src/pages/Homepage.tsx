@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MultiLineTypeWriter } from '../components/MultiLineTypeWriter';
 import TopAppBar from '../components/TopAppBar';
+import LoginModal from '../components/LoginModal';
+import { decodeJwtPayload } from '../utils/jwt';
 import './Homepage.css';
 import xpMonitor from '../assets/xp-monitor.svg';
 import xpRocket from '../assets/xp-rocket.svg';
@@ -50,6 +52,55 @@ import xpTarget from '../assets/xp-target.svg';
  *   └──────────────────────────────────────────────────────────┘
  */
 export const Homepage: React.FC = () => {
+  // ── Login Modal State ───────────────────────────────────────
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+
+  // ── User State (JWT) ────────────────────────────────────────
+  // Holds username if logged in, null otherwise. Decoded from JWT.
+  const [username, setUsername] = useState<string | null>(null);
+
+  // On mount, check for JWT in localStorage and decode username
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      const payload = decodeJwtPayload(token);
+      if (payload && payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name']) {
+        setUsername(payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name']);
+      } else if (payload && payload['unique_name']) {
+        setUsername(payload['unique_name']);
+      } else if (payload && payload['name']) {
+        setUsername(payload['name']);
+      } else {
+        setUsername(null);
+      }
+    } else {
+      setUsername(null);
+    }
+  }, []);
+
+  // Called after successful login (from LoginModal)
+  const handleLoginSuccess = () => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      const payload = decodeJwtPayload(token);
+      if (payload && payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name']) {
+        setUsername(payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name']);
+      } else if (payload && payload['unique_name']) {
+        setUsername(payload['unique_name']);
+      } else if (payload && payload['name']) {
+        setUsername(payload['name']);
+      } else {
+        setUsername(null);
+      }
+    }
+    setIsLoginOpen(false);
+  };
+
+  // Logout handler: clear token and user state
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setUsername(null);
+  };
   // ── Window State ──────────────────────────────────────────────
   // Tracks whether the IE browser window is visible on the desktop.
   //
@@ -165,18 +216,18 @@ export const Homepage: React.FC = () => {
        */}
       {isBrowserOpen && (
         <div className="window homepage-window">
-          {/* Pass onClose callback so the Close button can hide the window.
-           *
-           * REACT CONCEPT — Passing Callbacks as Props:
-           * We create an inline arrow function `() => setIsBrowserOpen(false)`
-           * and pass it as the `onClose` prop. When TopAppBar's Close button
-           * is clicked, it calls this function, which updates our state,
-           * which triggers a re-render, which unmounts the browser window.
-           *
-           * The data flows: Child event → Parent callback → State update → Re-render
-           * This is React's "one-way data flow" or "unidirectional data flow".
-           */}
-          <TopAppBar onClose={() => setIsBrowserOpen(false)} />
+          <TopAppBar
+            onClose={() => setIsBrowserOpen(false)}
+            onLoginClick={() => setIsLoginOpen(true)}
+            username={username}
+            onLogout={handleLogout}
+          />
+          {/* XP-style Login Modal (focuses screen, XP window style) */}
+          <LoginModal
+            open={isLoginOpen}
+            onClose={() => setIsLoginOpen(false)}
+            onLoginSuccess={handleLoginSuccess}
+          />
 
           <div className="window-body homepage-body">
             <div className="ie6-content-viewport">

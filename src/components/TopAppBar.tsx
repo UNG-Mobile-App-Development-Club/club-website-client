@@ -48,28 +48,25 @@ import './TopAppBar.css';
 interface TopAppBarProps {
   /** Text displayed in the XP title bar */
   title?: string;
-
-  /**
-   * Callback fired when the user clicks the Close (X) button.
-   *
-   * REACT CONCEPT — Callback Props:
-   * Instead of the child component deciding *what happens* on close, the
-   * parent decides by passing a function. This keeps TopAppBar reusable —
-   * one parent might hide the browser window, another might show a dialog.
-   * The child simply calls `onClose()` and the parent handles the logic.
-   * This is called "lifting state up" or "inversion of control".
-   *
-   * The `?` makes it optional — if no callback is passed, the Close button
-   * is rendered but does nothing (purely decorative), matching the default
-   * behavior of the Minimize and Maximize buttons.
-   */
+  /** Callback fired when the user clicks the Close (X) button. */
   onClose?: () => void;
+  /** Callback fired when Login is clicked. */
+  onLoginClick?: () => void;
+  /** Username if logged in, null/undefined if not. */
+  username?: string | null;
+  /** Callback fired when Logout is clicked. */
+  onLogout?: () => void;
 }
 
 export const TopAppBar: React.FC<TopAppBarProps> = ({
   title = 'University of North Georgia',
   onClose,
+  onLoginClick,
+  username,
+  onLogout,
 }) => {
+  // Dropdown state for user menu
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   // ── State ──────────────────────────────────────────────────────
   // Controls whether the mobile hamburger menu is expanded.
   // `useState` returns a [value, setter] tuple. React re-renders whenever
@@ -129,7 +126,59 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({
        */}
       <div className="title-bar">
         <div className="title-bar-text">{title}</div>
-        <button className="join-button">Join Now</button>
+        {username ? (
+          <div className="user-dropdown-wrapper" style={{ position: 'relative', display: 'inline-block' }}>
+            <button
+              className="join-button user-dropdown-btn"
+              style={{ minWidth: 90, cursor: 'pointer' }}
+              onClick={() => setUserMenuOpen((v) => !v)}
+              aria-haspopup="true"
+              aria-expanded={userMenuOpen}
+              tabIndex={0}
+            >
+              {username} <span style={{ fontSize: '1em', marginLeft: 4 }}>▼</span>
+            </button>
+            {userMenuOpen && (
+              <div
+                className="user-dropdown-menu"
+                style={{
+                  position: 'absolute',
+                  top: '100%',
+                  right: 0,
+                  background: '#fff',
+                  border: '1.5px solid #316ac5',
+                  borderRadius: 4,
+                  minWidth: 120,
+                  zIndex: 1000,
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+                  fontFamily: 'Tahoma, Microsoft Sans Serif, Arial, sans-serif',
+                }}
+                onMouseLeave={() => setUserMenuOpen(false)}
+              >
+                <button
+                  className="user-dropdown-item"
+                  style={{
+                    width: '100%',
+                    background: 'none',
+                    border: 'none',
+                    padding: '0.5em 1em',
+                    textAlign: 'left',
+                    cursor: 'pointer',
+                    fontSize: '1em',
+                  }}
+                  onClick={() => {
+                    setUserMenuOpen(false);
+                    onLogout && onLogout();
+                  }}
+                >
+                  Log out
+                </button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <button className="join-button" onClick={onLoginClick}>Login</button>
+        )}
         <div className="title-bar-controls">
           <button aria-label="Minimize"></button>
           <button aria-label="Maximize"></button>
@@ -338,7 +387,11 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({
             ))}
           </div>
           <div className="mobile-menu-action">
-            <button>Join Now</button>
+            {username ? (
+              <button className="join-button user-dropdown-btn" disabled>{username}</button>
+            ) : (
+              <button onClick={onLoginClick}>Login</button>
+            )}
           </div>
         </div>
       )}
