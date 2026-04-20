@@ -23,7 +23,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ open, onClose, onLoginSu
     setError(null);
     setSuccess(null);
     try {
-      const res = await fetch('/login', {
+      const res = await fetch('https://codehawks.org/api/Members/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ Email: email, Password: password }),
