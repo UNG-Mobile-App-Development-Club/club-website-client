@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { decodeJwtPayload } from '../utils/jwt';
 import './LoginModal.css';
 
 interface LoginModalProps {
@@ -35,8 +36,11 @@ export const LoginModal: React.FC<LoginModalProps> = ({ open, onClose, onLoginSu
         setSuccess('Login successful!');
         if (data.Token) {
           localStorage.setItem('token', data.Token);
-        }
-        if (onLoginSuccess) {
+          // Force UI update: decode and update username immediately if possible
+          if (onLoginSuccess) {
+            onLoginSuccess();
+          }
+        } else if (onLoginSuccess) {
           onLoginSuccess();
         } else {
           setTimeout(() => {
