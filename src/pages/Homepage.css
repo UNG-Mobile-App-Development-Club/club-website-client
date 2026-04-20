@@ -2,10 +2,14 @@
  * EVENTS SECTION SPLASH ANIMATION (Minecraft-style)
  * The heading text swells up and down to attract attention.
  * ═══════════════════════════════════════════════════════════════════ */
+
+
 .events-splash-animate {
   display: inline-block;
-  animation: eventsSplashPulse 2.2s cubic-bezier(.4,1.7,.7,1.01) infinite;
+  animation: eventsSplashPulse 2.2s cubic-bezier(.4,1.7,.7,1.01) 1;
   transform-origin: left center;
+  will-change: transform;
+  cursor: pointer;
 }
 
 @keyframes eventsSplashPulse {
@@ -17,6 +21,26 @@
   50% { transform: scale(1.08, 1.13); }
   60% { transform: scale(1); }
   100% { transform: scale(1); }
+}
+
+/* Silly hover animation: wiggle and color flash */
+.events-splash-animate:hover {
+  animation: eventsSplashWiggle 0.7s cubic-bezier(.68,-0.55,.27,1.55) 1;
+  color: #ffb900;
+  text-shadow: 0 0 8px #fff200, 0 2px 8px #316ac544;
+}
+
+@keyframes eventsSplashWiggle {
+  0% { transform: scale(1) rotate(0deg); }
+  10% { transform: scale(1.1,0.9) rotate(-8deg); }
+  20% { transform: scale(0.9,1.1) rotate(8deg); }
+  30% { transform: scale(1.1,0.9) rotate(-6deg); }
+  40% { transform: scale(0.9,1.1) rotate(6deg); }
+  50% { transform: scale(1.05,0.95) rotate(-3deg); }
+  60% { transform: scale(0.95,1.05) rotate(3deg); }
+  70% { transform: scale(1.02,0.98) rotate(-1deg); }
+  80% { transform: scale(0.98,1.02) rotate(1deg); }
+  100% { transform: scale(1) rotate(0deg); }
 }
 /* ═══════════════════════════════════════════════════════════════════
  * EVENTS SECTION — HIGH VISIBILITY

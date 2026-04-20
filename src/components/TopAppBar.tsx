@@ -94,7 +94,7 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({
 
   // External links — always visible and clickable in the utility area.
   const externalLinks = [
-    { href: 'https://github.com', label: 'GitHub' },
+    { href: 'https://github.com/UNG-Mobile-App-Development-Club', label: 'GitHub' },
     { href: 'https://discord.com', label: 'Discord' },
     { href: 'https://ung.edu', label: 'UNG' },
   ];
