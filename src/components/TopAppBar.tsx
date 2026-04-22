@@ -163,6 +163,24 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({
                     border: 'none',
                     padding: '0.5em 1em',
                     textAlign: 'left',
+                    cursor: 'not-allowed',
+                    fontSize: '1em',
+                    color: '#7a7a7a',
+                  }}
+                  type="button"
+                  disabled
+                  title="Profile is not implemented yet"
+                >
+                  View profile
+                </button>
+                <button
+                  className="user-dropdown-item"
+                  style={{
+                    width: '100%',
+                    background: 'none',
+                    border: 'none',
+                    padding: '0.5em 1em',
+                    textAlign: 'left',
                     cursor: 'pointer',
                     fontSize: '1em',
                   }}
@@ -413,14 +431,32 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({
                       zIndex: 1000,
                       boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
                       fontFamily: 'Tahoma, Microsoft Sans Serif, Arial, sans-serif',
-                    }}
-                    onMouseLeave={() => setUserMenuOpen(false)}
-                  >
-                    <button
-                      className="user-dropdown-item"
-                      style={{
-                        width: '100%',
-                        background: 'none',
+                }}
+                onMouseLeave={() => setUserMenuOpen(false)}
+              >
+                <button
+                  className="user-dropdown-item"
+                  style={{
+                    width: '100%',
+                    background: 'none',
+                    border: 'none',
+                    padding: '0.5em 1em',
+                    textAlign: 'left',
+                    cursor: 'not-allowed',
+                    fontSize: '1em',
+                    color: '#7a7a7a',
+                  }}
+                  type="button"
+                  disabled
+                  title="Profile is not implemented yet"
+                >
+                  View profile
+                </button>
+                <button
+                  className="user-dropdown-item"
+                  style={{
+                    width: '100%',
+                    background: 'none',
                         border: 'none',
                         padding: '0.5em 1em',
                         textAlign: 'left',

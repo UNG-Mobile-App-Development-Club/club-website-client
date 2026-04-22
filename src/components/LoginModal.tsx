@@ -8,6 +8,21 @@ interface LoginModalProps {
   onLoginSuccess?: () => void;
 }
 
+function getTokenFromLoginResponse(data: unknown): string | null {
+  if (!data || typeof data !== 'object') return null;
+
+  const candidateKeys = ['Token', 'token', 'jwt', 'Jwt', 'accessToken', 'access_token'];
+
+  for (const key of candidateKeys) {
+    const value = (data as Record<string, unknown>)[key];
+    if (typeof value === 'string' && value.trim().length > 0) {
+      return value;
+    }
+  }
+
+  return null;
+}
+
 export const LoginModal: React.FC<LoginModalProps> = ({ open, onClose, onLoginSuccess }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -33,13 +48,17 @@ export const LoginModal: React.FC<LoginModalProps> = ({ open, onClose, onLoginSu
         setError(data?.message || data || 'Login failed');
       } else {
         setSuccess('Login successful!');
-        if (data.Token) {
-          localStorage.setItem('token', data.Token);
-          // Force UI update: decode and update username immediately if possible
-          if (onLoginSuccess) {
-            onLoginSuccess();
-          }
-        } else if (onLoginSuccess) {
+        const token = getTokenFromLoginResponse(data);
+
+        if (!token) {
+          setError('Login succeeded, but no JWT token was returned.');
+          setSuccess(null);
+          return;
+        }
+
+        localStorage.setItem('token', token);
+
+        if (onLoginSuccess) {
           onLoginSuccess();
         } else {
           setTimeout(() => {
