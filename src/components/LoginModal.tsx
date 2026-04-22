@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { decodeJwtPayload } from '../utils/jwt';
 import './LoginModal.css';
 
 interface LoginModalProps {

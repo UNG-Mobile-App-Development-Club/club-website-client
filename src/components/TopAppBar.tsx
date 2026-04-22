@@ -129,14 +129,14 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({
         {username ? (
           <div className="user-dropdown-wrapper" style={{ position: 'relative', display: 'inline-block' }}>
             <button
-              className="join-button user-dropdown-btn"
-              style={{ minWidth: 90, cursor: 'pointer' }}
+              className="join-button"
+              style={{ cursor: 'pointer' }}
               onClick={() => setUserMenuOpen((v) => !v)}
               aria-haspopup="true"
               aria-expanded={userMenuOpen}
               tabIndex={0}
             >
-              {username} <span style={{ fontSize: '1em', marginLeft: 4 }}>▼</span>
+              {username}
             </button>
             {userMenuOpen && (
               <div
@@ -390,14 +390,14 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({
             {username ? (
               <div className="user-dropdown-wrapper" style={{ position: 'relative', display: 'inline-block' }}>
                 <button
-                  className="join-button user-dropdown-btn"
-                  style={{ minWidth: 90, cursor: 'pointer' }}
+                  className="join-button"
+                  style={{ cursor: 'pointer' }}
                   onClick={() => setUserMenuOpen((v) => !v)}
                   aria-haspopup="true"
                   aria-expanded={userMenuOpen}
                   tabIndex={0}
                 >
-                  {username} <span style={{ fontSize: '1em', marginLeft: 4 }}>▼</span>
+                  {username}
                 </button>
                 {userMenuOpen && (
                   <div
@@ -438,7 +438,7 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({
                 )}
               </div>
             ) : (
-              <button onClick={onLoginClick}>Login</button>
+              <button className="join-button" onClick={onLoginClick}>Login</button>
             )}
           </div>
         </div>

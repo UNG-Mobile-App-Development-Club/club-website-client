@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { MultiLineTypeWriter } from '../components/MultiLineTypeWriter';
 import TopAppBar from '../components/TopAppBar';
 import LoginModal from '../components/LoginModal';
-import { decodeJwtPayload } from '../utils/jwt';
+import { getUsernameFromJwt } from '../utils/jwt';
 import './Homepage.css';
 import xpMonitor from '../assets/xp-monitor.svg';
 import xpRocket from '../assets/xp-rocket.svg';
@@ -59,40 +59,24 @@ export const Homepage: React.FC = () => {
   // Holds username if logged in, null otherwise. Decoded from JWT.
   const [username, setUsername] = useState<string | null>(null);
 
+  const syncUsernameFromToken = () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setUsername(null);
+      return;
+    }
+
+    setUsername(getUsernameFromJwt(token));
+  };
+
   // On mount, check for JWT in localStorage and decode username
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      const payload = decodeJwtPayload(token);
-      if (payload && payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name']) {
-        setUsername(payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name']);
-      } else if (payload && payload['unique_name']) {
-        setUsername(payload['unique_name']);
-      } else if (payload && payload['name']) {
-        setUsername(payload['name']);
-      } else {
-        setUsername(null);
-      }
-    } else {
-      setUsername(null);
-    }
+    syncUsernameFromToken();
   }, []);
 
   // Called after successful login (from LoginModal)
   const handleLoginSuccess = () => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      const payload = decodeJwtPayload(token);
-      if (payload && payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name']) {
-        setUsername(payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name']);
-      } else if (payload && payload['unique_name']) {
-        setUsername(payload['unique_name']);
-      } else if (payload && payload['name']) {
-        setUsername(payload['name']);
-      } else {
-        setUsername(null);
-      }
-    }
+    syncUsernameFromToken();
     setIsLoginOpen(false);
   };
 
