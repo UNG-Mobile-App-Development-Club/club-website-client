@@ -148,7 +148,7 @@ export const Homepage: React.FC = () => {
   // column, then clamp it back into the visible desktop when the user
   // resizes the viewport or drags the window around.
   const MOBILE_BREAKPOINT = 768;
-  const WINDOW_DEFAULT_POSITIONS: DesktopWindowPositions = {
+  const WINDOW_MIN_POSITIONS: DesktopWindowPositions = {
     browser: { x: 152, y: 20 },
     cwInfo: { x: 230, y: 68 },
   };
@@ -166,25 +166,25 @@ export const Homepage: React.FC = () => {
       !desktopWindowElement ||
       window.innerWidth <= MOBILE_BREAKPOINT
     ) {
-      return WINDOW_DEFAULT_POSITIONS[windowId];
+      return WINDOW_MIN_POSITIONS[windowId];
     }
 
     const maxX = Math.max(
-      WINDOW_DEFAULT_POSITIONS[windowId].x,
+      WINDOW_MIN_POSITIONS[windowId].x,
       desktopElement.clientWidth -
         desktopWindowElement.offsetWidth -
         DESKTOP_WINDOW_EDGE_PADDING,
     );
     const maxY = Math.max(
-      WINDOW_DEFAULT_POSITIONS[windowId].y,
+      WINDOW_MIN_POSITIONS[windowId].y,
       desktopElement.clientHeight -
         desktopWindowElement.offsetHeight -
         DESKTOP_WINDOW_EDGE_PADDING,
     );
 
     return {
-      x: Math.min(Math.max(nextPosition.x, WINDOW_DEFAULT_POSITIONS[windowId].x), maxX),
-      y: Math.min(Math.max(nextPosition.y, WINDOW_DEFAULT_POSITIONS[windowId].y), maxY),
+      x: Math.min(Math.max(nextPosition.x, WINDOW_MIN_POSITIONS[windowId].x), maxX),
+      y: Math.min(Math.max(nextPosition.y, WINDOW_MIN_POSITIONS[windowId].y), maxY),
     };
   };
 
@@ -206,9 +206,23 @@ export const Homepage: React.FC = () => {
         const nextPositions = { ...currentPositions };
 
         (Object.keys(currentPositions) as DesktopWindowId[]).forEach((windowId) => {
-          const preferredPosition = draggedWindows[windowId]
-            ? currentPositions[windowId]
-            : WINDOW_DEFAULT_POSITIONS[windowId];
+          let preferredPosition = currentPositions[windowId];
+          const desktopElement = desktopRef.current;
+          const desktopWindowElement = desktopWindowRefs.current[windowId];
+
+          if (!draggedWindows[windowId] && desktopElement && desktopWindowElement) {
+            const centerX = Math.max(
+              WINDOW_MIN_POSITIONS[windowId].x,
+              (desktopElement.clientWidth - desktopWindowElement.offsetWidth) / 2,
+            );
+            const centerY = Math.max(
+              WINDOW_MIN_POSITIONS[windowId].y,
+              (desktopElement.clientHeight - desktopWindowElement.offsetHeight) / 2,
+            );
+            preferredPosition = { x: centerX, y: centerY };
+          } else if (!draggedWindows[windowId]) {
+            preferredPosition = WINDOW_MIN_POSITIONS[windowId];
+          }
 
           nextPositions[windowId] = clampWindowPosition(windowId, preferredPosition);
         });
@@ -239,7 +253,7 @@ export const Homepage: React.FC = () => {
     }));
     setWindowPositions((currentPositions) => ({
       ...currentPositions,
-      [windowId]: WINDOW_DEFAULT_POSITIONS[windowId],
+      [windowId]: WINDOW_MIN_POSITIONS[windowId],
     }));
     setWindowOpen(windowId, true);
   };
@@ -345,17 +359,15 @@ export const Homepage: React.FC = () => {
     "╚██████╗╚███╔███╔╝",
     " ╚═════╝ ╚══╝╚══╝ ",
   ];
-  const cwInfoRows = [
-    { label: 'OS', value: 'Competitive Programming Club @ UNG' },
-    { label: 'Host', value: 'Cottrell-Lab x86_64' },
-    { label: 'Kernel', value: 'ICPC 3.14.159-contest' },
-    { label: 'Uptime', value: 'Weekly meetings, semester-long grind' },
+  const cwInfoRows: { label: string; value: React.ReactNode }[] = [
+    { label: 'OS', value: 'CodingWarriors @ UNG' },
+    { label: 'Host', value: 'Online Discord / Teams' },
+    { label: 'Kernel', value: 'ICPC Preparation' },
+    { label: 'Uptime', value: 'Biweekly online meetings' },
     { label: 'Shell', value: 'bash, zsh, and last-minute stdin hacks' },
-    { label: 'WM', value: 'Windows XP Luna' },
-    { label: 'Terminal', value: 'Command Prompt' },
-    { label: 'Languages', value: 'C++ Java Python' },
+    { label: 'Languages', value: 'Java Python' },
     { label: 'Practice', value: 'LeetCode Codeforces Kattis UVA' },
-    { label: 'Theme', value: 'Blue / Silver / Bliss Green' },
+    { label: 'Connect', value: <a href="https://connect.ung.edu/organization/the-coding-warriors--gvl-" target="_blank" rel="noopener noreferrer" style={{ color: '#7dd6ff', textDecoration: 'underline' }}>UNG Connect</a> },
   ];
 
   // ── Desktop Icons ───────────────────────────────────────────────
@@ -376,7 +388,7 @@ export const Homepage: React.FC = () => {
     },
     {
       id: 'cw-info',
-      label: 'CW Info',
+      label: 'Coding Warriors',
       iconType: 'terminal' as const,
       onDoubleClick: () => launchDesktopWindow('cwInfo'),
     },
