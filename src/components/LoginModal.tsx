@@ -6,6 +6,7 @@ interface LoginModalProps {
   onClose: () => void;
   /** Called after successful login so parent can update user state */
   onLoginSuccess?: () => void;
+  onSwitchToSignup?: () => void;
 }
 
 function getTokenFromLoginResponse(data: unknown): string | null {
@@ -23,7 +24,7 @@ function getTokenFromLoginResponse(data: unknown): string | null {
   return null;
 }
 
-export const LoginModal: React.FC<LoginModalProps> = ({ open, onClose, onLoginSuccess }) => {
+export const LoginModal: React.FC<LoginModalProps> = ({ open, onClose, onLoginSuccess, onSwitchToSignup }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -114,6 +115,11 @@ export const LoginModal: React.FC<LoginModalProps> = ({ open, onClose, onLoginSu
               </button>
               <button type="button" onClick={onClose} disabled={loading} className="xp-btn-secondary">
                 Cancel
+              </button>
+            </div>
+            <div style={{ marginTop: '0.5rem', textAlign: 'center' }}>
+              <button type="button" onClick={onSwitchToSignup} disabled={loading} style={{ background: 'none', border: 'none', color: '#003399', textDecoration: 'underline', cursor: 'pointer', fontFamily: 'Tahoma, Arial, sans-serif' }}>
+                Create an account
               </button>
             </div>
           </form>

@@ -2,6 +2,7 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { MultiLineTypeWriter } from '../components/MultiLineTypeWriter';
 import TopAppBar from '../components/TopAppBar';
 import LoginModal from '../components/LoginModal';
+import SignupModal from '../components/SignupModal';
 import { getUsernameFromJwt } from '../utils/jwt';
 import './Homepage.css';
 import xpMonitor from '../assets/xp-monitor.svg';
@@ -79,6 +80,7 @@ export const Homepage: React.FC = () => {
 
   // ── Login Modal State ───────────────────────────────────────
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isSignupOpen, setIsSignupOpen] = useState(false);
 
   // ── User State (JWT) ────────────────────────────────────────
   // Holds username if logged in, null otherwise. Decoded from JWT.
@@ -482,6 +484,23 @@ export const Homepage: React.FC = () => {
             open={isLoginOpen}
             onClose={() => setIsLoginOpen(false)}
             onLoginSuccess={handleLoginSuccess}
+            onSwitchToSignup={() => {
+              setIsLoginOpen(false);
+              setIsSignupOpen(true);
+            }}
+          />
+
+          <SignupModal
+            open={isSignupOpen}
+            onClose={() => setIsSignupOpen(false)}
+            onSwitchToLogin={() => {
+              setIsSignupOpen(false);
+              setIsLoginOpen(true);
+            }}
+            onLoginSuccess={() => {
+              handleLoginSuccess();
+              setIsSignupOpen(false);
+            }}
           />
 
           <div className="window-body homepage-body">
