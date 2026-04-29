@@ -50,6 +50,14 @@ interface TopAppBarProps {
   title?: string;
   /** Callback fired when the user clicks the Close (X) button. */
   onClose?: () => void;
+  /** Pointer handler for dragging the outer desktop window by its title bar. */
+  onTitleBarPointerDown?: React.PointerEventHandler<HTMLDivElement>;
+  /** Pointer handler for dragging updates while the pointer is captured. */
+  onTitleBarPointerMove?: React.PointerEventHandler<HTMLDivElement>;
+  /** Pointer handler for ending a drag interaction cleanly. */
+  onTitleBarPointerUp?: React.PointerEventHandler<HTMLDivElement>;
+  /** Pointer handler for canceled drags (browser interruptions, lost capture). */
+  onTitleBarPointerCancel?: React.PointerEventHandler<HTMLDivElement>;
   /** Callback fired when Login is clicked. */
   onLoginClick?: () => void;
   /** Username if logged in, null/undefined if not. */
@@ -61,6 +69,10 @@ interface TopAppBarProps {
 export const TopAppBar: React.FC<TopAppBarProps> = ({
   title = 'University of North Georgia',
   onClose,
+  onTitleBarPointerDown,
+  onTitleBarPointerMove,
+  onTitleBarPointerUp,
+  onTitleBarPointerCancel,
   onLoginClick,
   username,
   onLogout,
@@ -124,7 +136,13 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({
        * the click — no error, no crash. This is safe because React
        * treats `undefined` event handlers as "no handler attached".
        */}
-      <div className="title-bar">
+      <div
+        className="title-bar"
+        onPointerDown={onTitleBarPointerDown}
+        onPointerMove={onTitleBarPointerMove}
+        onPointerUp={onTitleBarPointerUp}
+        onPointerCancel={onTitleBarPointerCancel}
+      >
         <div className="title-bar-text">{title}</div>
         {username ? (
           <div className="user-dropdown-wrapper" style={{ position: 'relative', display: 'inline-block' }}>

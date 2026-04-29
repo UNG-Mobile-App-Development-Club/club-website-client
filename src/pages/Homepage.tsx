@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { MultiLineTypeWriter } from '../components/MultiLineTypeWriter';
 import TopAppBar from '../components/TopAppBar';
 import LoginModal from '../components/LoginModal';
@@ -8,6 +8,19 @@ import xpMonitor from '../assets/xp-monitor.svg';
 import xpRocket from '../assets/xp-rocket.svg';
 import xpPeople from '../assets/xp-people.svg';
 import xpTarget from '../assets/xp-target.svg';
+
+type DesktopWindowId = 'browser' | 'cwInfo';
+
+type WindowPosition = {
+  x: number;
+  y: number;
+};
+
+type DesktopWindowPositions = Record<DesktopWindowId, WindowPosition>;
+
+type DesktopWindowOpenState = Record<DesktopWindowId, boolean>;
+
+type DesktopWindowDraggedState = Record<DesktopWindowId, boolean>;
 
 /**
  * Homepage — The main (and currently only) page of the ADC website.
@@ -52,6 +65,18 @@ import xpTarget from '../assets/xp-target.svg';
  *   └──────────────────────────────────────────────────────────┘
  */
 export const Homepage: React.FC = () => {
+  const desktopRef = useRef<HTMLDivElement | null>(null);
+  const desktopWindowRefs = useRef<Record<DesktopWindowId, HTMLDivElement | null>>({
+    browser: null,
+    cwInfo: null,
+  });
+  const dragStateRef = useRef<{
+    windowId: DesktopWindowId;
+    pointerId: number;
+    pointerOffsetX: number;
+    pointerOffsetY: number;
+  } | null>(null);
+
   // ── Login Modal State ───────────────────────────────────────
   const [isLoginOpen, setIsLoginOpen] = useState(false);
 
@@ -105,7 +130,199 @@ export const Homepage: React.FC = () => {
   // The old DOM nodes for the browser window are removed, and React
   // builds new DOM based on the updated state. This is what makes
   // React "reactive" — UI is always a function of current state.
-  const [isBrowserOpen, setIsBrowserOpen] = useState<boolean>(true);
+  const [openWindows, setOpenWindows] = useState<DesktopWindowOpenState>({
+    browser: true,
+    cwInfo: false,
+  });
+  const [draggedWindows, setDraggedWindows] = useState<DesktopWindowDraggedState>({
+    browser: false,
+    cwInfo: false,
+  });
+  const [windowPositions, setWindowPositions] = useState<DesktopWindowPositions>({
+    browser: { x: 152, y: 20 },
+    cwInfo: { x: 230, y: 68 },
+  });
+
+  // These constants define the "default launch slot" of the browser
+  // window on the XP desktop. We keep the browser offset from the icon
+  // column, then clamp it back into the visible desktop when the user
+  // resizes the viewport or drags the window around.
+  const MOBILE_BREAKPOINT = 768;
+  const WINDOW_DEFAULT_POSITIONS: DesktopWindowPositions = {
+    browser: { x: 152, y: 20 },
+    cwInfo: { x: 230, y: 68 },
+  };
+  const DESKTOP_WINDOW_EDGE_PADDING = 16;
+
+  const clampWindowPosition = (
+    windowId: DesktopWindowId,
+    nextPosition: WindowPosition,
+  ) => {
+    const desktopElement = desktopRef.current;
+    const desktopWindowElement = desktopWindowRefs.current[windowId];
+
+    if (
+      !desktopElement ||
+      !desktopWindowElement ||
+      window.innerWidth <= MOBILE_BREAKPOINT
+    ) {
+      return WINDOW_DEFAULT_POSITIONS[windowId];
+    }
+
+    const maxX = Math.max(
+      WINDOW_DEFAULT_POSITIONS[windowId].x,
+      desktopElement.clientWidth -
+        desktopWindowElement.offsetWidth -
+        DESKTOP_WINDOW_EDGE_PADDING,
+    );
+    const maxY = Math.max(
+      WINDOW_DEFAULT_POSITIONS[windowId].y,
+      desktopElement.clientHeight -
+        desktopWindowElement.offsetHeight -
+        DESKTOP_WINDOW_EDGE_PADDING,
+    );
+
+    return {
+      x: Math.min(Math.max(nextPosition.x, WINDOW_DEFAULT_POSITIONS[windowId].x), maxX),
+      y: Math.min(Math.max(nextPosition.y, WINDOW_DEFAULT_POSITIONS[windowId].y), maxY),
+    };
+  };
+
+  // Re-clamp the browser window whenever it mounts or the viewport size
+  // changes. This mirrors a real desktop manager: windows keep their
+  // coordinates, but the system nudges them back into view if the screen
+  // becomes too small to fit the old position.
+  useLayoutEffect(() => {
+    if (!openWindows.browser && !openWindows.cwInfo) {
+      return undefined;
+    }
+
+    const syncWindowIntoViewport = () => {
+      if (window.innerWidth <= MOBILE_BREAKPOINT) {
+        return;
+      }
+
+      setWindowPositions((currentPositions) => {
+        const nextPositions = { ...currentPositions };
+
+        (Object.keys(currentPositions) as DesktopWindowId[]).forEach((windowId) => {
+          const preferredPosition = draggedWindows[windowId]
+            ? currentPositions[windowId]
+            : WINDOW_DEFAULT_POSITIONS[windowId];
+
+          nextPositions[windowId] = clampWindowPosition(windowId, preferredPosition);
+        });
+
+        return nextPositions;
+      });
+    };
+
+    syncWindowIntoViewport();
+    window.addEventListener('resize', syncWindowIntoViewport);
+
+    return () => {
+      window.removeEventListener('resize', syncWindowIntoViewport);
+    };
+  }, [draggedWindows, openWindows]);
+
+  const setWindowOpen = (windowId: DesktopWindowId, isOpen: boolean) => {
+    setOpenWindows((currentWindows) => ({
+      ...currentWindows,
+      [windowId]: isOpen,
+    }));
+  };
+
+  const launchDesktopWindow = (windowId: DesktopWindowId) => {
+    setDraggedWindows((currentDraggedWindows) => ({
+      ...currentDraggedWindows,
+      [windowId]: false,
+    }));
+    setWindowPositions((currentPositions) => ({
+      ...currentPositions,
+      [windowId]: WINDOW_DEFAULT_POSITIONS[windowId],
+    }));
+    setWindowOpen(windowId, true);
+  };
+
+  const stopWindowDrag = () => {
+    dragStateRef.current = null;
+    document.body.classList.remove('xp-window-dragging');
+  };
+
+  const handleWindowTitleBarPointerDown = (
+    event: React.PointerEvent<HTMLDivElement>,
+    windowId: DesktopWindowId,
+  ) => {
+    if (window.innerWidth <= MOBILE_BREAKPOINT) {
+      return;
+    }
+
+    const target = event.target as HTMLElement;
+    if (target.closest('button, a, input, textarea, select, label')) {
+      return;
+    }
+
+    const desktopWindowElement = desktopWindowRefs.current[windowId];
+    if (!desktopWindowElement) {
+      return;
+    }
+
+    const windowRect = desktopWindowElement.getBoundingClientRect();
+
+    dragStateRef.current = {
+      windowId,
+      pointerId: event.pointerId,
+      pointerOffsetX: event.clientX - windowRect.left,
+      pointerOffsetY: event.clientY - windowRect.top,
+    };
+
+    setDraggedWindows((currentDraggedWindows) => ({
+      ...currentDraggedWindows,
+      [windowId]: true,
+    }));
+    event.currentTarget.setPointerCapture(event.pointerId);
+    document.body.classList.add('xp-window-dragging');
+  };
+
+  const handleWindowTitleBarPointerMove = (
+    event: React.PointerEvent<HTMLDivElement>,
+  ) => {
+    const dragState = dragStateRef.current;
+    const desktopElement = desktopRef.current;
+
+    if (
+      !dragState ||
+      dragState.pointerId !== event.pointerId ||
+      !desktopElement ||
+      window.innerWidth <= MOBILE_BREAKPOINT
+    ) {
+      return;
+    }
+
+    const desktopRect = desktopElement.getBoundingClientRect();
+    const unclampedPosition = {
+      x: event.clientX - desktopRect.left - dragState.pointerOffsetX,
+      y: event.clientY - desktopRect.top - dragState.pointerOffsetY,
+    };
+
+    setWindowPositions((currentPositions) => ({
+      ...currentPositions,
+      [dragState.windowId]: clampWindowPosition(dragState.windowId, unclampedPosition),
+    }));
+  };
+
+  const handleWindowTitleBarPointerUp = (
+    event: React.PointerEvent<HTMLDivElement>,
+  ) => {
+    const dragState = dragStateRef.current;
+
+    if (!dragState || dragState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    event.currentTarget.releasePointerCapture(event.pointerId);
+    stopWindowDrag();
+  };
 
   // The ASCII art lines fed to the typewriter effect.
   // Each string is one line of output — the component renders them
@@ -119,6 +336,26 @@ export const Homepage: React.FC = () => {
     "╚═╝  ╚═╝╚═════╝  ╚═════╝",
     "",
     "Application Development Club",
+  ];
+  const cwArt = [
+    " ██████╗██╗    ██╗",
+    "██╔════╝██║    ██║",
+    "██║     ██║ █╗ ██║",
+    "██║     ██║███╗██║",
+    "╚██████╗╚███╔███╔╝",
+    " ╚═════╝ ╚══╝╚══╝ ",
+  ];
+  const cwInfoRows = [
+    { label: 'OS', value: 'Competitive Programming Club @ UNG' },
+    { label: 'Host', value: 'Cottrell-Lab x86_64' },
+    { label: 'Kernel', value: 'ICPC 3.14.159-contest' },
+    { label: 'Uptime', value: 'Weekly meetings, semester-long grind' },
+    { label: 'Shell', value: 'bash, zsh, and last-minute stdin hacks' },
+    { label: 'WM', value: 'Windows XP Luna' },
+    { label: 'Terminal', value: 'Command Prompt' },
+    { label: 'Languages', value: 'C++ Java Python' },
+    { label: 'Practice', value: 'LeetCode Codeforces Kattis UVA' },
+    { label: 'Theme', value: 'Blue / Silver / Bliss Green' },
   ];
 
   // ── Desktop Icons ───────────────────────────────────────────────
@@ -135,7 +372,13 @@ export const Homepage: React.FC = () => {
       id: 'adc-website',
       label: 'ADC Website',
       iconType: 'globe' as const,
-      onDoubleClick: () => setIsBrowserOpen(true),
+      onDoubleClick: () => launchDesktopWindow('browser'),
+    },
+    {
+      id: 'cw-info',
+      label: 'CW Info',
+      iconType: 'terminal' as const,
+      onDoubleClick: () => launchDesktopWindow('cwInfo'),
     },
     { id: 'project-1', label: 'Project 1', iconType: 'folder' as const },
     { id: 'project-2', label: 'Project 2', iconType: 'folder' as const },
@@ -148,7 +391,7 @@ export const Homepage: React.FC = () => {
     // Windows XP desktop. The Bliss wallpaper is on <body> (set in
     // index.css), so this div is transparent — the wallpaper shows
     // through. Desktop icons and the browser window sit on top.
-    <div className="xp-desktop">
+    <div className="xp-desktop" ref={desktopRef}>
 
       {/* ── Desktop Icons ──────────────────────────────────────────
        * Arranged in a CSS Grid that flows top-to-bottom, then
@@ -198,10 +441,26 @@ export const Homepage: React.FC = () => {
        * animations or timers inside the unmounted subtree. For a
        * complex component like the browser window, this is cleaner.
        */}
-      {isBrowserOpen && (
-        <div className="window homepage-window">
+      {openWindows.browser && (
+        <div
+          className="window homepage-window"
+          ref={(element) => {
+            desktopWindowRefs.current.browser = element;
+          }}
+          style={{
+            left: `${windowPositions.browser.x}px`,
+            top: `${windowPositions.browser.y}px`,
+          }}
+        >
           <TopAppBar
-            onClose={() => setIsBrowserOpen(false)}
+            onClose={() => {
+              stopWindowDrag();
+              setWindowOpen('browser', false);
+            }}
+            onTitleBarPointerDown={(event) => handleWindowTitleBarPointerDown(event, 'browser')}
+            onTitleBarPointerMove={handleWindowTitleBarPointerMove}
+            onTitleBarPointerUp={handleWindowTitleBarPointerUp}
+            onTitleBarPointerCancel={stopWindowDrag}
             onLoginClick={() => setIsLoginOpen(true)}
             username={username}
             onLogout={handleLogout}
@@ -396,6 +655,72 @@ export const Homepage: React.FC = () => {
             <p className="status-bar-field status-bar__done">Done</p>
             <p className="status-bar-field status-bar__info">&copy; 2026 Application Development Club</p>
             <p className="status-bar-field status-bar__zone">Internet</p>
+          </div>
+        </div>
+      )}
+
+      {openWindows.cwInfo && (
+        <div
+          className="window homepage-window cw-window"
+          ref={(element) => {
+            desktopWindowRefs.current.cwInfo = element;
+          }}
+          style={{
+            left: `${windowPositions.cwInfo.x}px`,
+            top: `${windowPositions.cwInfo.y}px`,
+          }}
+        >
+          <div
+            className="title-bar cw-window-title-bar"
+            onPointerDown={(event) => handleWindowTitleBarPointerDown(event, 'cwInfo')}
+            onPointerMove={handleWindowTitleBarPointerMove}
+            onPointerUp={handleWindowTitleBarPointerUp}
+            onPointerCancel={stopWindowDrag}
+          >
+            <div className="title-bar-text">Command Prompt</div>
+            <div className="title-bar-controls">
+              <button aria-label="Minimize"></button>
+              <button aria-label="Maximize"></button>
+              <button
+                aria-label="Close"
+                onClick={() => {
+                  stopWindowDrag();
+                  setWindowOpen('cwInfo', false);
+                }}
+              ></button>
+            </div>
+          </div>
+
+          <div className="window-body cw-window-body">
+            <pre className="terminal-prompt cw-terminal-prompt">C:\CW\UNG&gt; neofetch.exe</pre>
+            <div className="cw-neofetch">
+              <pre className="cw-ascii-art" aria-hidden="true">
+                {cwArt.join('\n')}
+              </pre>
+              <div className="cw-neofetch-details">
+                <p className="cw-neofetch-title">cw@ung</p>
+                <div className="cw-neofetch-rule" aria-hidden="true"></div>
+                {cwInfoRows.map((row) => (
+                  <p key={row.label} className="cw-neofetch-row">
+                    <span className="cw-neofetch-label">{row.label}</span>
+                    <span className="cw-neofetch-separator">:</span>
+                    <span className="cw-neofetch-value">{row.value}</span>
+                  </p>
+                ))}
+                <div className="cw-color-swatches" aria-hidden="true">
+                  <span className="cw-swatch cw-swatch--blue"></span>
+                  <span className="cw-swatch cw-swatch--green"></span>
+                  <span className="cw-swatch cw-swatch--gold"></span>
+                  <span className="cw-swatch cw-swatch--silver"></span>
+                </div>
+                <div className="cw-color-swatches cw-color-swatches--bright" aria-hidden="true">
+                  <span className="cw-swatch cw-swatch--navy"></span>
+                  <span className="cw-swatch cw-swatch--teal"></span>
+                  <span className="cw-swatch cw-swatch--amber"></span>
+                  <span className="cw-swatch cw-swatch--ice"></span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

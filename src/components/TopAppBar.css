@@ -54,10 +54,18 @@
  * ═══════════════════════════════════════════════════════════════════ */
 .title-bar {
   flex-wrap: nowrap !important;
+  cursor: move;
+  touch-action: none;
 }
 
 .title-bar .title-bar-text {
   margin-right: auto;
+}
+
+.title-bar button,
+.title-bar a,
+.title-bar input {
+  cursor: pointer;
 }
 
 /* ═══════════════════════════════════════════════════════════════════

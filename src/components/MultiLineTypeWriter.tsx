@@ -33,6 +33,7 @@ export const MultiLineTypeWriter: React.FC<MultiLineTypeWriterProps> = ({
   );
   const [hasStarted, setHasStarted] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
+  const linesSignature = lines.join('\u0000');
 
   useEffect(() => {
     // Handle initial delay
@@ -60,7 +61,6 @@ export const MultiLineTypeWriter: React.FC<MultiLineTypeWriterProps> = ({
       
       // Handle looping
       if (loop) {
-        console.log("Initiating loop");
         const loopTimer = setTimeout(() => {
           setDisplayedLines(lines.map(() => ''));
           setCurrentIndices(lines.map(() => 0));
@@ -99,13 +99,17 @@ export const MultiLineTypeWriter: React.FC<MultiLineTypeWriterProps> = ({
     }
   }, [currentIndices, lines, speed, isComplete, hasStarted, onComplete, loop, loopDelay]);
 
-  // Reset when lines change
+  // Reset only when the actual text content changes.
+  // The parent can re-render for unrelated reasons, like dragging a
+  // desktop window. In those cases React may pass a new array instance
+  // with the same strings. Depending on `lines` directly would treat
+  // that as "new content" and restart the animation unnecessarily.
   useEffect(() => {
     setDisplayedLines(lines.map(() => ''));
     setCurrentIndices(lines.map(() => 0));
     setIsComplete(false);
     setHasStarted(false);
-  }, [lines]);
+  }, [linesSignature]);
 
   return (
     <div className={className}>

@@ -1,46 +1,38 @@
 /* ═══════════════════════════════════════════════════════════════════
  * EVENTS SECTION SPLASH ANIMATION (Minecraft-style)
- * The heading text swells up and down to attract attention.
+ * The heading text gets a short, controlled bounce so it feels
+ * more like a UI callout and less like rubbery squash/stretch.
  * ═══════════════════════════════════════════════════════════════════ */
 
 
 .events-splash-animate {
   display: inline-block;
-  animation: eventsSplashPulse 2.2s cubic-bezier(.4,1.7,.7,1.01) 1;
+  animation: eventsSplashPulse 1.35s cubic-bezier(.2,.9,.22,1) 1;
   transform-origin: left center;
   will-change: transform;
   cursor: pointer;
+  transition: color 0.14s ease-out, text-shadow 0.14s ease-out;
 }
 
 @keyframes eventsSplashPulse {
-  0% { transform: scale(1); }
-  10% { transform: scale(1.08, 1.13); }
-  20% { transform: scale(1.13, 1.08); }
-  30% { transform: scale(1.18, 1.18); }
-  40% { transform: scale(1.13, 1.08); }
-  50% { transform: scale(1.08, 1.13); }
-  60% { transform: scale(1); }
+  0% { transform: translateY(0) scale(1); }
+  18% { transform: translateY(-1px) scale(1.04); }
+  38% { transform: translateY(-2px) scale(1.075); }
+  55% { transform: translateY(0) scale(1.02); }
+  72% { transform: translateY(-1px) scale(1.035); }
   100% { transform: scale(1); }
 }
 
-/* Silly hover animation: wiggle and color flash */
 .events-splash-animate:hover {
-  animation: eventsSplashWiggle 0.7s cubic-bezier(.68,-0.55,.27,1.55) 1;
-  color: #ffb900;
-  text-shadow: 0 0 8px #fff200, 0 2px 8px #316ac544;
+  animation: eventsSplashHoverNudge 0.28s ease-out 1;
+  color: #d78500;
+  text-shadow: 0 1px 0 #fff, 0 0 6px #fff3a1, 0 2px 8px #316ac544;
 }
 
-@keyframes eventsSplashWiggle {
-  0% { transform: scale(1) rotate(0deg); }
-  10% { transform: scale(1.1,0.9) rotate(-8deg); }
-  20% { transform: scale(0.9,1.1) rotate(8deg); }
-  30% { transform: scale(1.1,0.9) rotate(-6deg); }
-  40% { transform: scale(0.9,1.1) rotate(6deg); }
-  50% { transform: scale(1.05,0.95) rotate(-3deg); }
-  60% { transform: scale(0.95,1.05) rotate(3deg); }
-  70% { transform: scale(1.02,0.98) rotate(-1deg); }
-  80% { transform: scale(0.98,1.02) rotate(1deg); }
-  100% { transform: scale(1) rotate(0deg); }
+@keyframes eventsSplashHoverNudge {
+  0% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-1px) scale(1.04); }
+  100% { transform: translateY(0) scale(1.02); }
 }
 /* ═══════════════════════════════════════════════════════════════════
  * EVENTS SECTION — HIGH VISIBILITY
@@ -197,6 +189,7 @@
  * icons (which use absolute positioning) stay within bounds.
  * ═══════════════════════════════════════════════════════════════════ */
 .xp-desktop {
+  --desktop-icon-gutter: 136px;
   position: relative;
   min-height: 100vh;
   padding: 8px;
@@ -462,6 +455,57 @@
   border-bottom: none;
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+ * TERMINAL ICON (CW Info shortcut)
+ *
+ * XP shipped with plenty of little utility icons that combined a
+ * beveled frame, a dark screen, and bright status details. This one
+ * keeps that language so CW Info feels like another native desktop app
+ * instead of a random extra shortcut.
+ * ═══════════════════════════════════════════════════════════════════ */
+.desktop-icon__img--terminal {
+  width: 46px;
+  height: 38px;
+  margin-top: 5px;
+  margin-left: 1px;
+  border: 1px solid;
+  border-color: #f6fbff #335c8c #203857 #f6fbff;
+  background: linear-gradient(180deg, #bfe1ff 0%, #7db5e6 52%, #4d83bd 100%);
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.75),
+    inset -1px -1px 0 rgba(32, 56, 87, 0.65),
+    1px 2px 3px rgba(0, 0, 0, 0.35);
+  position: relative;
+}
+
+.desktop-icon__img--terminal::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 36px;
+  height: 24px;
+  border: 1px solid #0b1d34;
+  background:
+    linear-gradient(180deg, rgba(110, 170, 255, 0.18), transparent 30%),
+    #0a0f18;
+  box-shadow:
+    inset 1px 1px 0 rgba(155, 215, 255, 0.2),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.55);
+}
+
+.desktop-icon__img--terminal::after {
+  content: 'C:\\>';
+  position: absolute;
+  top: 10px;
+  left: 8px;
+  font-family: "Lucida Console", "Courier New", monospace;
+  font-size: 8px;
+  font-weight: bold;
+  color: #fff7a6;
+  text-shadow: 0 0 2px rgba(255, 247, 166, 0.45);
+}
+
 /* ── Icon Label ──────────────────────────────────────────────────── */
 .desktop-icon__label {
   font-family: "Tahoma", "MS Sans Serif", sans-serif;
@@ -488,8 +532,10 @@
  * ═══════════════════════════════════════════════════════════════════ */
 
 .homepage-window {
-  max-width: 1200px;
-  margin: 20px auto;
+  position: absolute;
+  z-index: 10;
+  width: min(1200px, calc(100vw - var(--desktop-icon-gutter) - 40px));
+  margin: 0;
 
   /* ── Crisp edge overrides ── */
   border-radius: 0 !important;
@@ -506,6 +552,10 @@
    * Restoring uniform 3px padding pushes all children inward, revealing
    * the full 6-layer inset shadow frame on every side. */
   padding: 3px !important;
+}
+
+.homepage-window > header > .title-bar {
+  user-select: none;
 }
 
 /* Zero out title-bar rounding on the outer window */
@@ -525,6 +575,20 @@
 
 .homepage-window .terminal-window > .title-bar {
   border-radius: 0 !important;
+}
+
+.cw-window {
+  width: min(680px, calc(100vw - var(--desktop-icon-gutter) - 56px));
+}
+
+.cw-window-body {
+  background:
+    radial-gradient(circle at top right, rgba(95, 149, 255, 0.12), transparent 26%),
+    linear-gradient(180deg, #0d1320 0%, #06090f 100%) !important;
+  border-top: 1px solid #3d79d0;
+  min-height: 320px;
+  padding: 16px !important;
+  margin: 0 !important;
 }
 
 .homepage-body {
@@ -635,6 +699,139 @@
   /* Fade-in animation */
   opacity: 0;
   animation: fadeIn 1s ease-in 2s forwards;
+}
+
+.cw-window-title-bar {
+  user-select: none;
+  cursor: move;
+  touch-action: none;
+}
+
+.cw-content {
+  text-align: left;
+}
+
+.cw-terminal-prompt {
+  color: #bac6d8;
+  margin-bottom: 18px;
+  letter-spacing: 0.01em;
+}
+
+.cw-neofetch {
+  display: grid;
+  grid-template-columns: minmax(0, 220px) minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+
+.cw-ascii-art {
+  margin: 0;
+  color: #8dc9ff;
+  font-family: "Lucida Console", "Courier New", monospace;
+  font-size: clamp(0.76rem, 1.7vw, 0.96rem);
+  line-height: 1.22;
+  text-shadow: 0 0 8px rgba(71, 151, 255, 0.18);
+}
+
+.cw-neofetch-details {
+  min-width: 0;
+  color: #d6e7fb;
+  font-family: "Lucida Console", "Courier New", monospace;
+  font-size: 0.83rem;
+  line-height: 1.08;
+}
+
+.cw-neofetch-title {
+  margin: 0;
+  color: #ffffff;
+  font-weight: bold;
+  letter-spacing: 0.02em;
+}
+
+.cw-neofetch-rule {
+  height: 1px;
+  margin: 6px 0 10px;
+  background: linear-gradient(90deg, #8fc8ff 0%, rgba(143, 200, 255, 0.15) 100%);
+}
+
+.cw-neofetch-row {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 86px 10px minmax(0, 1fr);
+  gap: 0;
+}
+
+.cw-neofetch-label {
+  color: #7dd6ff;
+  font-weight: bold;
+}
+
+.cw-neofetch-separator {
+  color: #7dd6ff;
+}
+
+.cw-neofetch-value {
+  color: #d6e7fb;
+}
+
+.cw-color-swatches {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.cw-color-swatches--bright {
+  margin-top: 2px;
+}
+
+.cw-swatch {
+  width: 16px;
+  height: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.cw-swatch--blue {
+  background: #316ac5;
+}
+
+.cw-swatch--green {
+  background: #5aa05a;
+}
+
+.cw-swatch--gold {
+  background: #d3a437;
+}
+
+.cw-swatch--silver {
+  background: #9ea6b0;
+}
+
+.cw-swatch--navy {
+  background: #1f3f75;
+}
+
+.cw-swatch--teal {
+  background: #317f93;
+}
+
+.cw-swatch--amber {
+  background: #d78500;
+}
+
+.cw-swatch--ice {
+  background: #cfe6ff;
+}
+
+@media (max-width: 768px) {
+  .cw-neofetch {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .cw-ascii-art {
+    font-size: 0.8rem;
+  }
 }
 
 @keyframes fadeIn {
@@ -776,6 +973,9 @@
 /* ── Responsive ──────────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .homepage-window {
+    position: static;
+    z-index: auto;
+    width: auto;
     margin: 0;
     /* Full-width on mobile — no outer margin */
   }
@@ -810,6 +1010,11 @@
     justify-content: center;
     margin-bottom: 8px;
   }
+}
+
+body.xp-window-dragging {
+  user-select: none;
+  cursor: move;
 }
 
 /* ═══════════════════════════════════════════════════════════════════
