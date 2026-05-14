@@ -50,6 +50,10 @@ interface TopAppBarProps {
   title?: string;
   /** Callback fired when the user clicks the Close (X) button. */
   onClose?: () => void;
+  /** Callback fired when the user clicks the Minimize (_) button. */
+  onMinimize?: () => void;
+  /** Callback fired when the user clicks the Maximize (□) button. */
+  onMaximize?: () => void;
   /** Pointer handler for dragging the outer desktop window by its title bar. */
   onTitleBarPointerDown?: React.PointerEventHandler<HTMLDivElement>;
   /** Pointer handler for dragging updates while the pointer is captured. */
@@ -69,6 +73,8 @@ interface TopAppBarProps {
 export const TopAppBar: React.FC<TopAppBarProps> = ({
   title = 'University of North Georgia',
   onClose,
+  onMinimize,
+  onMaximize,
   onTitleBarPointerDown,
   onTitleBarPointerMove,
   onTitleBarPointerUp,
@@ -216,8 +222,8 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({
           <button className="join-button" onClick={onLoginClick}>Login</button>
         )}
         <div className="title-bar-controls">
-          <button aria-label="Minimize"></button>
-          <button aria-label="Maximize"></button>
+          <button aria-label="Minimize" onClick={onMinimize}></button>
+          <button aria-label="Maximize" onClick={onMaximize}></button>
           <button aria-label="Close" onClick={onClose}></button>
         </div>
       </div>

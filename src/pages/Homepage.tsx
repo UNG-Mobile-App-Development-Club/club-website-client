@@ -3,6 +3,7 @@ import { MultiLineTypeWriter } from '../components/MultiLineTypeWriter';
 import TopAppBar from '../components/TopAppBar';
 import LoginModal from '../components/LoginModal';
 import SignupModal from '../components/SignupModal';
+import NighthawkMascot from '../components/NighthawkMascot';
 import { getUsernameFromJwt } from '../utils/jwt';
 import './Homepage.css';
 import xpMonitor from '../assets/xp-monitor.svg';
@@ -20,8 +21,17 @@ type WindowPosition = {
 type DesktopWindowPositions = Record<DesktopWindowId, WindowPosition>;
 
 type DesktopWindowOpenState = Record<DesktopWindowId, boolean>;
+type DesktopWindowMinimizedState = Record<DesktopWindowId, boolean>;
+type DesktopWindowMaximizedState = Record<DesktopWindowId, boolean>;
 
 type DesktopWindowDraggedState = Record<DesktopWindowId, boolean>;
+
+const EASTERN_TIME_FORMATTER = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'America/New_York',
+  hour: 'numeric',
+  minute: '2-digit',
+  hour12: true,
+});
 
 /**
  * Homepage — The main (and currently only) page of the ADC website.
@@ -66,6 +76,12 @@ type DesktopWindowDraggedState = Record<DesktopWindowId, boolean>;
  *   └──────────────────────────────────────────────────────────┘
  */
 export const Homepage: React.FC = () => {
+  const DESKTOP_WINDOW_ORDER: DesktopWindowId[] = ['browser', 'cwInfo'];
+  const WINDOW_DISPLAY_NAMES: Record<DesktopWindowId, string> = {
+    browser: 'ADC Website',
+    cwInfo: 'Coding Warriors',
+  };
+
   const desktopRef = useRef<HTMLDivElement | null>(null);
   const desktopWindowRefs = useRef<Record<DesktopWindowId, HTMLDivElement | null>>({
     browser: null,
@@ -77,14 +93,31 @@ export const Homepage: React.FC = () => {
     pointerOffsetX: number;
     pointerOffsetY: number;
   } | null>(null);
+  const startMenuRef = useRef<HTMLDivElement | null>(null);
 
   // ── Login Modal State ───────────────────────────────────────
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isSignupOpen, setIsSignupOpen] = useState(false);
+  const [isStartMenuOpen, setIsStartMenuOpen] = useState(false);
+  const [trayTime, setTrayTime] = useState(() => EASTERN_TIME_FORMATTER.format(new Date()));
 
   // ── User State (JWT) ────────────────────────────────────────
   // Holds username if logged in, null otherwise. Decoded from JWT.
   const [username, setUsername] = useState<string | null>(null);
+  const startMenuLinks = [
+    {
+      id: 'adc-connect',
+      label: 'Application Development Club',
+      href: 'https://connect.ung.edu/organization/app-development-club-of-ung--dah-',
+      iconType: 'club',
+    },
+    {
+      id: 'cw-connect',
+      label: 'Coding Warriors',
+      href: 'https://connect.ung.edu/organization/the-coding-warriors--gvl-',
+      iconType: 'terminal',
+    },
+  ] as const;
 
   const syncUsernameFromToken = () => {
     const token = localStorage.getItem('token');
@@ -100,6 +133,48 @@ export const Homepage: React.FC = () => {
   useEffect(() => {
     syncUsernameFromToken();
   }, []);
+
+  useEffect(() => {
+    const syncTrayTime = () => {
+      setTrayTime(EASTERN_TIME_FORMATTER.format(new Date()));
+    };
+
+    syncTrayTime();
+
+    const timerId = window.setInterval(syncTrayTime, 30000);
+    return () => {
+      window.clearInterval(timerId);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isStartMenuOpen) {
+      return undefined;
+    }
+
+    const handleDocumentPointerDown = (event: PointerEvent) => {
+      const startMenuElement = startMenuRef.current;
+      const target = event.target as Node;
+
+      if (startMenuElement && !startMenuElement.contains(target)) {
+        setIsStartMenuOpen(false);
+      }
+    };
+
+    const handleDocumentKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsStartMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('pointerdown', handleDocumentPointerDown);
+    document.addEventListener('keydown', handleDocumentKeyDown);
+
+    return () => {
+      document.removeEventListener('pointerdown', handleDocumentPointerDown);
+      document.removeEventListener('keydown', handleDocumentKeyDown);
+    };
+  }, [isStartMenuOpen]);
 
   // Called after successful login (from LoginModal)
   const handleLoginSuccess = () => {
@@ -136,11 +211,25 @@ export const Homepage: React.FC = () => {
     browser: true,
     cwInfo: false,
   });
+  const [minimizedWindows, setMinimizedWindows] = useState<DesktopWindowMinimizedState>({
+    browser: false,
+    cwInfo: false,
+  });
+  const [maximizedWindows, setMaximizedWindows] = useState<DesktopWindowMaximizedState>({
+    browser: false,
+    cwInfo: false,
+  });
+  const [activeWindowId, setActiveWindowId] = useState<DesktopWindowId>('browser');
+  const [windowOrder, setWindowOrder] = useState<DesktopWindowId[]>(DESKTOP_WINDOW_ORDER);
   const [draggedWindows, setDraggedWindows] = useState<DesktopWindowDraggedState>({
     browser: false,
     cwInfo: false,
   });
   const [windowPositions, setWindowPositions] = useState<DesktopWindowPositions>({
+    browser: { x: 152, y: 20 },
+    cwInfo: { x: 230, y: 68 },
+  });
+  const [restoreWindowPositions, setRestoreWindowPositions] = useState<DesktopWindowPositions>({
     browser: { x: 152, y: 20 },
     cwInfo: { x: 230, y: 68 },
   });
@@ -246,6 +335,89 @@ export const Homepage: React.FC = () => {
       ...currentWindows,
       [windowId]: isOpen,
     }));
+
+    if (!isOpen) {
+      setMinimizedWindows((currentMinimizedWindows) => ({
+        ...currentMinimizedWindows,
+        [windowId]: false,
+      }));
+      setMaximizedWindows((currentMaximizedWindows) => ({
+        ...currentMaximizedWindows,
+        [windowId]: false,
+      }));
+    }
+  };
+
+  const activateWindow = (windowId: DesktopWindowId) => {
+    setActiveWindowId(windowId);
+    setWindowOrder((currentOrder) => {
+      const remainingWindows = currentOrder.filter((id) => id !== windowId);
+      return [...remainingWindows, windowId];
+    });
+  };
+
+  const setWindowMinimized = (windowId: DesktopWindowId, isMinimized: boolean) => {
+    setMinimizedWindows((currentMinimizedWindows) => ({
+      ...currentMinimizedWindows,
+      [windowId]: isMinimized,
+    }));
+
+    if (!isMinimized) {
+      activateWindow(windowId);
+    }
+  };
+
+  const toggleWindowMaximized = (windowId: DesktopWindowId) => {
+    if (window.innerWidth <= MOBILE_BREAKPOINT || !openWindows[windowId]) {
+      return;
+    }
+
+    if (maximizedWindows[windowId]) {
+      const restorePosition = restoreWindowPositions[windowId];
+      setMaximizedWindows((currentMaximizedWindows) => ({
+        ...currentMaximizedWindows,
+        [windowId]: false,
+      }));
+      setWindowPositions((currentPositions) => ({
+        ...currentPositions,
+        [windowId]: clampWindowPosition(windowId, restorePosition),
+      }));
+      setDraggedWindows((currentDraggedWindows) => ({
+        ...currentDraggedWindows,
+        [windowId]: true,
+      }));
+      activateWindow(windowId);
+      return;
+    }
+
+    setRestoreWindowPositions((currentRestorePositions) => ({
+      ...currentRestorePositions,
+      [windowId]: windowPositions[windowId],
+    }));
+    setWindowMinimized(windowId, false);
+    setMaximizedWindows((currentMaximizedWindows) => ({
+      ...currentMaximizedWindows,
+      [windowId]: true,
+    }));
+    activateWindow(windowId);
+  };
+
+  const handleTaskbarWindowToggle = (windowId: DesktopWindowId) => {
+    if (!openWindows[windowId]) {
+      return;
+    }
+
+    if (minimizedWindows[windowId]) {
+      setWindowMinimized(windowId, false);
+      return;
+    }
+
+    if (activeWindowId === windowId) {
+      setWindowMinimized(windowId, true);
+      return;
+    }
+
+    activateWindow(windowId);
   };
 
   const launchDesktopWindow = (windowId: DesktopWindowId) => {
@@ -258,6 +430,12 @@ export const Homepage: React.FC = () => {
       [windowId]: WINDOW_MIN_POSITIONS[windowId],
     }));
     setWindowOpen(windowId, true);
+    setWindowMinimized(windowId, false);
+    setMaximizedWindows((currentMaximizedWindows) => ({
+      ...currentMaximizedWindows,
+      [windowId]: false,
+    }));
+    activateWindow(windowId);
   };
 
   const stopWindowDrag = () => {
@@ -270,6 +448,10 @@ export const Homepage: React.FC = () => {
     windowId: DesktopWindowId,
   ) => {
     if (window.innerWidth <= MOBILE_BREAKPOINT) {
+      return;
+    }
+
+    if (maximizedWindows[windowId]) {
       return;
     }
 
@@ -406,7 +588,6 @@ export const Homepage: React.FC = () => {
     // index.css), so this div is transparent — the wallpaper shows
     // through. Desktop icons and the browser window sit on top.
     <div className="xp-desktop" ref={desktopRef}>
-
       {/* ── Desktop Icons ──────────────────────────────────────────
        * Arranged in a CSS Grid that flows top-to-bottom, then
        * left-to-right — mimicking XP's default icon arrangement.
@@ -455,21 +636,31 @@ export const Homepage: React.FC = () => {
        * animations or timers inside the unmounted subtree. For a
        * complex component like the browser window, this is cleaner.
        */}
-      {openWindows.browser && (
+      {openWindows.browser && !minimizedWindows.browser && (
         <div
-          className="window homepage-window"
+          className={`window homepage-window${maximizedWindows.browser ? ' is-maximized' : ''}`}
           ref={(element) => {
             desktopWindowRefs.current.browser = element;
           }}
           style={{
             left: `${windowPositions.browser.x}px`,
             top: `${windowPositions.browser.y}px`,
+            zIndex: 20 + windowOrder.indexOf('browser'),
           }}
+          onPointerDown={() => activateWindow('browser')}
         >
           <TopAppBar
             onClose={() => {
               stopWindowDrag();
               setWindowOpen('browser', false);
+            }}
+            onMinimize={() => {
+              stopWindowDrag();
+              setWindowMinimized('browser', true);
+            }}
+            onMaximize={() => {
+              stopWindowDrag();
+              toggleWindowMaximized('browser');
             }}
             onTitleBarPointerDown={(event) => handleWindowTitleBarPointerDown(event, 'browser')}
             onTitleBarPointerMove={handleWindowTitleBarPointerMove}
@@ -622,12 +813,12 @@ export const Homepage: React.FC = () => {
                 <span className="xp-calendar-icon" aria-hidden="true">
                   {/* SVG: Windows XP-style calendar icon */}
                   <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="3" y="6" width="26" height="22" rx="5" fill="#fff" stroke="#316ac5" stroke-width="2"/>
+                    <rect x="3" y="6" width="26" height="22" rx="5" fill="#fff" stroke="#316ac5" strokeWidth="2"/>
                     <rect x="3" y="6" width="26" height="6" rx="2" fill="#316ac5"/>
                     <rect x="7" y="10" width="18" height="2" rx="1" fill="#7ec8ff"/>
-                    <rect x="8" y="15" width="4" height="4" rx="1.2" fill="#eaf3ff" stroke="#316ac5" stroke-width="1"/>
-                    <rect x="14" y="15" width="4" height="4" rx="1.2" fill="#eaf3ff" stroke="#316ac5" stroke-width="1"/>
-                    <rect x="20" y="15" width="4" height="4" rx="1.2" fill="#eaf3ff" stroke="#316ac5" stroke-width="1"/>
+                    <rect x="8" y="15" width="4" height="4" rx="1.2" fill="#eaf3ff" stroke="#316ac5" strokeWidth="1"/>
+                    <rect x="14" y="15" width="4" height="4" rx="1.2" fill="#eaf3ff" stroke="#316ac5" strokeWidth="1"/>
+                    <rect x="20" y="15" width="4" height="4" rx="1.2" fill="#eaf3ff" stroke="#316ac5" strokeWidth="1"/>
                   </svg>
                 </span>
                 <span className="events-splash-animate">Upcoming Events</span>
@@ -690,16 +881,18 @@ export const Homepage: React.FC = () => {
         </div>
       )}
 
-      {openWindows.cwInfo && (
+      {openWindows.cwInfo && !minimizedWindows.cwInfo && (
         <div
-          className="window homepage-window cw-window"
+          className={`window homepage-window cw-window${maximizedWindows.cwInfo ? ' is-maximized' : ''}`}
           ref={(element) => {
             desktopWindowRefs.current.cwInfo = element;
           }}
           style={{
             left: `${windowPositions.cwInfo.x}px`,
             top: `${windowPositions.cwInfo.y}px`,
+            zIndex: 20 + windowOrder.indexOf('cwInfo'),
           }}
+          onPointerDown={() => activateWindow('cwInfo')}
         >
           <div
             className="title-bar cw-window-title-bar"
@@ -710,8 +903,20 @@ export const Homepage: React.FC = () => {
           >
             <div className="title-bar-text">Command Prompt</div>
             <div className="title-bar-controls">
-              <button aria-label="Minimize"></button>
-              <button aria-label="Maximize"></button>
+              <button
+                aria-label="Minimize"
+                onClick={() => {
+                  stopWindowDrag();
+                  setWindowMinimized('cwInfo', true);
+                }}
+              ></button>
+              <button
+                aria-label="Maximize"
+                onClick={() => {
+                  stopWindowDrag();
+                  toggleWindowMaximized('cwInfo');
+                }}
+              ></button>
               <button
                 aria-label="Close"
                 onClick={() => {
@@ -755,6 +960,78 @@ export const Homepage: React.FC = () => {
           </div>
         </div>
       )}
+
+      <footer className="xp-taskbar" aria-label="Desktop taskbar">
+        <div className="xp-start-menu-container" ref={startMenuRef}>
+          <button
+            className="xp-taskbar__start"
+            type="button"
+            aria-label="Start"
+            aria-haspopup="menu"
+            aria-expanded={isStartMenuOpen}
+            onClick={() => setIsStartMenuOpen((currentValue) => !currentValue)}
+          >
+            <span className="xp-taskbar__start-flag" aria-hidden="true"></span>
+            <span className="xp-taskbar__start-text">start</span>
+          </button>
+          {isStartMenuOpen && (
+            <div className="xp-start-menu" role="menu" aria-label="UNG Club links">
+              <div className="xp-start-menu__header">UNG Connect</div>
+              <div className="xp-start-menu__items">
+                {startMenuLinks.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className="xp-start-menu__item"
+                    role="menuitem"
+                    onClick={() => {
+                      window.open(item.href, '_blank', 'noopener,noreferrer');
+                      setIsStartMenuOpen(false);
+                    }}
+                  >
+                    <span className={`xp-start-menu__item-icon xp-start-menu__item-icon--${item.iconType}`} aria-hidden="true"></span>
+                    <span className="xp-start-menu__item-label">{item.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="xp-taskbar__windows" role="toolbar" aria-label="Open windows">
+          {DESKTOP_WINDOW_ORDER.filter((windowId) => openWindows[windowId]).map((windowId) => {
+            const isMinimized = minimizedWindows[windowId];
+            const isActive = activeWindowId === windowId && !isMinimized;
+
+            return (
+              <button
+                key={windowId}
+                className={`xp-taskbar__window-button${isActive ? ' is-active' : ''}${isMinimized ? ' is-minimized' : ''}`}
+                type="button"
+                onClick={() => handleTaskbarWindowToggle(windowId)}
+                title={WINDOW_DISPLAY_NAMES[windowId]}
+                aria-pressed={isActive}
+              >
+                {WINDOW_DISPLAY_NAMES[windowId]}
+              </button>
+            );
+          })}
+        </div>
+        <div className="xp-taskbar__clock" aria-label="System tray">
+          <span className="xp-taskbar__network" aria-hidden="true">
+            <span className="xp-taskbar__network-bar xp-taskbar__network-bar--1"></span>
+            <span className="xp-taskbar__network-bar xp-taskbar__network-bar--2"></span>
+            <span className="xp-taskbar__network-bar xp-taskbar__network-bar--3"></span>
+            <span className="xp-taskbar__network-bar xp-taskbar__network-bar--4"></span>
+          </span>
+          <span className="xp-taskbar__tray-icon xp-taskbar__tray-icon--volume" aria-hidden="true"></span>
+          <span className="xp-taskbar__tray-icon xp-taskbar__tray-icon--shield" aria-hidden="true"></span>
+          <span className="xp-taskbar__tray-icon xp-taskbar__tray-icon--messenger" aria-hidden="true"></span>
+          <NighthawkMascot boundsRef={desktopRef} />
+          <time className="xp-taskbar__time" dateTime={new Date().toISOString()}>
+            {trayTime}
+          </time>
+        </div>
+      </footer>
     </div>
   );
 };
